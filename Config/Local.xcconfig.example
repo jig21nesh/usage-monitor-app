@@ -1,0 +1,4 @@
+// Copy to Config/Local.xcconfig (gitignored) and set your own team for local signing.
+// Find your team id in Xcode > Settings > Accounts, or in `security find-identity -v -p codesigning`.
+DEVELOPMENT_TEAM = ABCDE12345
+CODE_SIGN_STYLE = Automatic

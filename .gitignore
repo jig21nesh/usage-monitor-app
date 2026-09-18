@@ -1,0 +1,34 @@
+# Xcode
+*.xcodeproj
+*.xcworkspace
+!*.xcodeproj/project.pbxproj
+xcuserdata/
+DerivedData/
+*.xcresult
+*.xcscmblueprint
+*.xccheckout
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# Local, per-developer configuration (signing team etc.)
+Config/Local.xcconfig
+
+# Coverage and build output
+coverage/
+build/
+*.profraw
+*.profdata
+
+# macOS
+.DS_Store
+
+# Secrets: never commit credentials or environment files
+.env
+.env.*
+*.pem
+*.p12
+*.mobileprovision
+*.provisionprofile
