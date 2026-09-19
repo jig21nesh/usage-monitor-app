@@ -1,0 +1,12 @@
+{
+  "config": {
+    "currentPeriod": {
+      "start": "2026-09-14T04:41:00.000000Z",
+      "end": "2026-09-21T04:41:00.000000Z"
+    },
+    "onDemandUsed": {},
+    "prepaidBalance": {},
+    "isUnifiedBillingUser": true
+  },
+  "subscriptionTier": "SuperGrokHeavy"
+}

@@ -1,0 +1,10 @@
+{
+  "config": {
+    "creditUsagePercent": 4,
+    "currentPeriod": {
+      "start": "2026-09-21T04:41:00Z",
+      "end": "2026-09-14T04:41:00Z"
+    }
+  },
+  "subscriptionTier": "Premium"
+}
