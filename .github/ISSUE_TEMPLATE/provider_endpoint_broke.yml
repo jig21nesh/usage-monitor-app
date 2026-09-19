@@ -1,0 +1,59 @@
+name: Provider endpoint changed or broke
+description: A vendor's unofficial usage endpoint started failing or returning a new shape
+labels: [provider, bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The endpoints this app reads are unofficial (see ADR 0003) and change without notice.
+        This template collects what is needed to adapt the provider quickly. Never paste tokens,
+        cookies or full response bodies that could identify your account.
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      options:
+        - Claude
+        - OpenAI
+        - Grok
+    validations:
+      required: true
+  - type: input
+    id: since
+    attributes:
+      label: When did it start failing
+      placeholder: "2026-09-19, after updating the CLI to x.y.z"
+    validations:
+      required: true
+  - type: input
+    id: status
+    attributes:
+      label: HTTP status or error shown in Diagnostics
+      placeholder: "426, or decoding:limits_shape"
+    validations:
+      required: true
+  - type: input
+    id: cli-version
+    attributes:
+      label: Vendor CLI version
+      placeholder: "codex-cli 0.154.0"
+    validations:
+      required: true
+  - type: textarea
+    id: shape
+    attributes:
+      label: New response shape (keys only)
+      description: If the vendor changed the JSON, list the top-level keys or a fully anonymised example. No real values.
+      render: json
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics report
+      render: text
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: Nothing above contains a token, cookie, email or account identifier.
+          required: true
