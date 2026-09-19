@@ -15,7 +15,8 @@ enum AppComposition {
         #endif
         return UsageMonitorModel(
             providers: ProviderRegistry.live(),
-            settingsStore: UserDefaultsSettingsStore()
+            settingsStore: UserDefaultsSettingsStore(),
+            wakeSource: WorkspaceWakeSource()
         )
     }
 

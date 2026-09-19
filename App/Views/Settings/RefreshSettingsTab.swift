@@ -32,6 +32,14 @@ struct RefreshSettingsTab: View {
                     .accessibilityIdentifier("settings.refresh.now")
                 }
             }
+            Section("Display") {
+                Picker("Show percentages as", selection: $model.settings.percentStyle) {
+                    ForEach(PercentStyle.allCases) { style in
+                        Text(style.title).tag(style)
+                    }
+                }
+                .accessibilityIdentifier("settings.refresh.percentStyle")
+            }
             Section("Startup") {
                 LaunchAtLoginToggle()
             }

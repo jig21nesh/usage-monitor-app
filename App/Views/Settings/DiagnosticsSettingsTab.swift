@@ -1,9 +1,11 @@
+import AppKit
 import SwiftUI
 import UsageMonitorCore
 
 /// Read-only view of the local counters (ADR 0006). Nothing here ever contains a credential.
 struct DiagnosticsSettingsTab: View {
     @Environment(UsageMonitorModel.self) private var model
+    @State private var copiedAt: Date?
 
     private struct Row: Identifiable {
         let id: ProviderID
@@ -39,8 +41,30 @@ struct DiagnosticsSettingsTab: View {
             .font(.caption)
             .foregroundStyle(.secondary)
             .accessibilityIdentifier("settings.diagnostics.footer")
+            HStack {
+                Spacer()
+                if copiedAt != nil {
+                    Text("Copied").font(.caption).foregroundStyle(.secondary)
+                }
+                Button("Copy report") {
+                    copyReport()
+                }
+                .accessibilityIdentifier("settings.diagnostics.copy")
+            }
         }
         .padding()
+    }
+
+    /// The report is redacted in Core before it reaches the pasteboard (ADR 0006).
+    private func copyReport() {
+        let report = model.diagnosticsReport(
+            appVersion: Self.appVersion,
+            osVersion: ProcessInfo.processInfo.operatingSystemVersionString
+        )
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(report, forType: .string)
+        copiedAt = .now
     }
 
     private var enabledList: String {
