@@ -126,7 +126,7 @@ Open **Settings…** from the panel.
 |---|---|
 | Accounts | Link state, plan and credential source per provider; **Re-link** after signing in to a CLI again; shows the login command |
 | Providers | Choose which providers appear in the panel |
-| Refresh | Refresh interval (1, 2, 5, 10 or 15 minutes; default 2) and **Launch at login** |
+| Refresh | Refresh interval (1, 2, 5, 10 or 15 minutes; default 2), percentages shown as used or left, and **Launch at login** |
 | Diagnostics | Poll counts, last error and duration per provider, plus a redacted text report you can attach to bug reports |
 
 Behaviour worth knowing:
