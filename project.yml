@@ -75,6 +75,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.curiouspilabs.UsageMonitorUITests
         TEST_TARGET_NAME: UsageMonitor
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
 schemes:
   UsageMonitor:
     build:

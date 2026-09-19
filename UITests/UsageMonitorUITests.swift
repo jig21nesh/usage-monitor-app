@@ -1,6 +1,7 @@
 import XCTest
 
 final class UsageMonitorUITests: XCTestCase {
+    @MainActor
     func testAppLaunchesAsBackgroundMenuBarExtra() {
         let app = XCUIApplication()
         app.launchEnvironment["USAGE_MONITOR_UITEST"] = "1"
