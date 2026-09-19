@@ -1,0 +1,47 @@
+{
+  "plan_type": "pro",
+  "rate_limit": {
+    "primary_window": {
+      "used_percent": 12,
+      "limit_window_seconds": 18000,
+      "reset_at": 1789958460
+    },
+    "secondary_window": {
+      "used_percent": 58,
+      "limit_window_seconds": 604800,
+      "reset_at": 1790081000
+    }
+  },
+  "additional_rate_limits": [
+    {
+      "limit_name": "GPT-5.5 Codex",
+      "metered_feature": "codex",
+      "rate_limit": {
+        "primary_window": {
+          "used_percent": 81,
+          "limit_window_seconds": 604800,
+          "reset_at": 1790081000
+        },
+        "secondary_window": {
+          "used_percent": 3,
+          "limit_window_seconds": 18000,
+          "reset_at": 1789958460
+        }
+      },
+      "normal_model_slug": "gpt-5.5-codex"
+    },
+    {
+      "limit_name": null,
+      "metered_feature": "deep_research",
+      "rate_limit": {
+        "primary_window": {
+          "used_percent": 40,
+          "limit_window_seconds": 2592000,
+          "reset_at": 1792000000
+        },
+        "secondary_window": null
+      },
+      "normal_model_slug": "Deep Research"
+    }
+  ]
+}
