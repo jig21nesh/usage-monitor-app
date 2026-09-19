@@ -31,6 +31,8 @@ Adopt option 1 exclusively.
 
 - "Sign in" in the app means "link the credentials already on this Mac". Onboarding detects each
   CLI login and explains how to install or log in to the CLI when it is missing.
+- For Claude, the `CLAUDE_CODE_OAUTH_TOKEN` environment variable is accepted as a fallback when
+  no keychain item exists, matching Claude Code's own precedence. It is read, never written.
 - Credentials are read at poll time and held in memory for the duration of one request. The app
   never writes a vendor token, cookie or refresh token anywhere: not to Keychain, not to
   `UserDefaults`, not to disk, not to logs.
@@ -54,5 +56,9 @@ wrapped with a Secure Enclave key via CryptoKit, and this ADR must be superseded
 - The first Keychain read of the Claude Code item triggers a macOS consent dialog; the user
   should choose "Always Allow". Onboarding explains this.
 - Token expiry is surfaced as "re-link needed" with instructions to run the CLI login command.
+- Grok Build access tokens last about six hours and the CLI refreshes them only when it runs
+  (observed 2026-09-19: a token issued at login expired six hours later; `grok models` refreshed
+  it). Grok therefore reads "re-link needed" whenever the CLI has been idle, which is accepted
+  rather than adding a second refresher that would rotate the CLI's refresh token.
 - Threat surface is limited to read-only access to three files or Keychain items that the user
   already trusts those CLIs with.

@@ -20,15 +20,16 @@ issues.
   endpoints. See `docs/adr/0003`.
 - Network access is outbound HTTPS only, under App Transport Security, with response bodies
   capped at 1 MB.
-- The app runs with Hardened Runtime and, where the platform allows, App Sandbox with read-only
-  exceptions for the two credential files. See `docs/adr/0004`.
+- The app runs with Hardened Runtime and App Sandbox, with read-only exceptions for the two
+  credential files. See `docs/adr/0004`.
 - Logs and diagnostics are redacted at source; no telemetry leaves the machine. See
   `docs/adr/0006`.
 
 ## Dependency policy
 
-The app has no runtime third-party dependencies. Development tools (XcodeGen, SwiftLint) are
-pinned in CI. Any Dependabot or GitHub security alert is treated as technical debt to be
+The app has no runtime third-party dependencies. GitHub Actions used by CI are pinned to commit
+SHAs and updated by Dependabot; the development tools (XcodeGen, SwiftLint) are installed from
+Homebrew at their current formula versions. Any Dependabot or GitHub security alert is treated as technical debt to be
 resolved in the next release; exceptions are documented here with severity, mitigation, owner and
 review date.
 

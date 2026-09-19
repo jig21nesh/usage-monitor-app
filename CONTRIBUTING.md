@@ -39,7 +39,9 @@ scripts/coverage-gate.sh
 
 ## Standards
 
-- Swift 6 language mode with strict concurrency. Warnings are treated as errors in CI.
+- Swift 6 language mode with strict concurrency. Warnings are errors for both the app target
+  (`SWIFT_TREAT_WARNINGS_AS_ERRORS`) and the Core package (`scripts/coverage-gate.sh` passes
+  `-warnings-as-errors`).
 - SwiftLint must pass: `swiftlint lint --strict`.
 - Tests use Swift Testing. Coverage on `UsageMonitorCore` must stay at or above 90%.
 - Never persist, log or transmit a vendor credential. See `docs/adr/0002` and `SECURITY.md`.

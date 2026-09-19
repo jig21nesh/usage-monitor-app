@@ -7,6 +7,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Document the real Grok token lifetime (about six hours) and the re-link workaround.
+
 ### Added
 
 - Repository bootstrap: project rules, Architecture Decision Records 0001 to 0006, README,

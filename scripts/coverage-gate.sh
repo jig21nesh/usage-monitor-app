@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 THRESHOLD="${COVERAGE_THRESHOLD:-90}"
 PACKAGE="Packages/UsageMonitorCore"
 
-swift test --package-path "$PACKAGE" --enable-code-coverage --parallel
+swift test --package-path "$PACKAGE" --enable-code-coverage --parallel -Xswiftc -warnings-as-errors
 CODECOV_JSON="$(swift test --package-path "$PACKAGE" --show-codecov-path)"
 
 /usr/bin/python3 - "$CODECOV_JSON" "$THRESHOLD" <<'PY'
