@@ -1,0 +1,9 @@
+{
+  "config": {
+    "creditUsagePercent": 12.5,
+    "onDemandUsed": {},
+    "prepaidBalance": {}
+  },
+  "onDemandEnabled": true,
+  "subscriptionTier": "PremiumPlus"
+}

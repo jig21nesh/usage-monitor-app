@@ -1,11 +1,22 @@
 import Foundation
 
-/// Scaffold placeholder so the app runs end to end showing "not linked". Replaced by the
-/// provider implementation branch; the `live` signature is the contract that branch fulfils.
+/// Grok adapter: Grok Build CLI credential, one billing request, pure mapper (ADR 0001).
 public struct GrokUsageProvider: UsageProvider {
     public let id: ProviderID = .grok
 
-    public init() {}
+    let credentials: any CredentialSource<GrokCredential>
+    let client: GrokUsageClient
+    let now: @Sendable () -> Date
+
+    public init(
+        credentials: any CredentialSource<GrokCredential>,
+        client: GrokUsageClient,
+        now: @escaping @Sendable () -> Date
+    ) {
+        self.credentials = credentials
+        self.client = client
+        self.now = now
+    }
 
     public static func live(
         environment: UserEnvironment,
@@ -14,14 +25,33 @@ public struct GrokUsageProvider: UsageProvider {
         fileSystem: any FileSystem,
         now: @escaping @Sendable () -> Date
     ) -> GrokUsageProvider {
-        GrokUsageProvider()
+        GrokUsageProvider(
+            credentials: GrokBuildCredentialSource(environment: environment, fileSystem: fileSystem, now: now),
+            client: GrokUsageClient(http: http),
+            now: now
+        )
     }
 
     public func linkState() async -> LinkState {
-        .notLinked(.credentialsNotFound)
+        do {
+            let credential = try credentials.load()
+            return .linked(AccountInfo(planName: nil, accountLabel: credential.email, origin: id.credentialOrigin))
+        } catch {
+            return .notLinked(error)
+        }
     }
 
     public func fetchUsage() async throws(ProviderError) -> UsageSnapshot {
-        throw .credentialsNotFound
+        let credential = try credentials.load()
+        let body: Data
+        do {
+            body = try await client.fetchBilling(with: credential)
+        } catch {
+            UsageLog.providers.error("grok fetch failed error=\(error.logIdentifier, privacy: .public)")
+            throw error
+        }
+        let snapshot = try GrokUsageMapper.snapshot(from: body, fetchedAt: now())
+        UsageLog.providers.info("grok fetch ok windows=\(snapshot.windows.count, privacy: .public)")
+        return snapshot
     }
 }
