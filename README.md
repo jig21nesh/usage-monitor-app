@@ -44,9 +44,12 @@ Homebrew tap are on the [roadmap](#roadmap).
 
 ## Features
 
-<!-- Optional screenshot. Add docs/images/panel.png and uncomment:
-![The usage panel showing Claude, OpenAI and Grok bars](docs/images/panel.png)
--->
+<p align="center">
+  <img src="docs/images/panel.png" width="400"
+       alt="The usage panel: Claude session and weekly bars, OpenAI session and weekly bars, Grok weekly bar">
+</p>
+
+*Panel shown with the app's built-in demo data; your numbers come from your own accounts.*
 
 - Lives in the menu bar with no Dock icon. Click the icon for every linked provider at a glance.
 - **Claude:** current 5-hour session, weekly "all models" and weekly per-model windows (for
@@ -94,6 +97,9 @@ The generated Xcode project and your local signing config are gitignored on purp
 
 1. Launch the app. The onboarding window lists the three providers and shows which CLI sign-ins
    were detected on this Mac.
+
+   <img src="docs/images/onboarding.png" width="480"
+        alt="Onboarding window listing Claude, OpenAI and Grok with their detected logins">
 2. Click **Link** next to each provider you want to monitor. For Claude, macOS may ask whether
    the app can read the "Claude Code-credentials" item in your keychain; choose **Always Allow**
    so the question is not repeated on every refresh.
@@ -121,6 +127,9 @@ Buttons at the bottom: **Refresh now**, **Settings…** and **Quit**.
 ## Configuration
 
 Open **Settings…** from the panel.
+
+<img src="docs/images/settings.png" width="440"
+     alt="Settings window on the Providers tab with switches for Claude, OpenAI and Grok">
 
 | Tab | What it does |
 |---|---|
