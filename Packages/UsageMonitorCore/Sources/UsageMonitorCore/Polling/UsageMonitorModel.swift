@@ -28,15 +28,21 @@ public final class UsageMonitorModel {
     private let sleeper: any Sleeper
     private let backoff: BackoffPolicy
     private let now: @Sendable () -> Date
+    private let wakeSource: (any SystemWakeSource)?
+    private let wakeRefreshThreshold: Duration
     private var consecutiveFailures: [ProviderID: Int] = [:]
+    private var lastWakeRefreshAt: Date?
     private(set) var loopTask: Task<Void, Never>?
+    private(set) var wakeTask: Task<Void, Never>?
 
     public init(
         providers: [any UsageProvider],
         settingsStore: any SettingsStore,
         sleeper: any Sleeper = ContinuousClockSleeper(),
         backoff: BackoffPolicy = .standard,
-        now: @escaping @Sendable () -> Date = { Date() }
+        now: @escaping @Sendable () -> Date = { Date() },
+        wakeSource: (any SystemWakeSource)? = nil,
+        wakeRefreshThreshold: Duration = .seconds(30)
     ) {
         let settings = settingsStore.load()
         self.settings = settings
@@ -45,6 +51,8 @@ public final class UsageMonitorModel {
         self.sleeper = sleeper
         self.backoff = backoff
         self.now = now
+        self.wakeSource = wakeSource
+        self.wakeRefreshThreshold = wakeRefreshThreshold
         self.statuses = providers.map {
             ProviderStatus(provider: $0.id, isEnabled: settings.enabledProviders.contains($0.id))
         }
@@ -52,20 +60,65 @@ public final class UsageMonitorModel {
 
     public var visibleStatuses: [ProviderStatus] { statuses.filter(\.isEnabled) }
 
+    /// When the loop will poll again, for the panel footer. Nil until the first poll completes.
+    public var nextPollAt: Date? {
+        lastRefreshAt?.addingTimeInterval(settings.refreshInterval.duration.timeInterval)
+    }
+
     public func status(for id: ProviderID) -> ProviderStatus? {
         statuses.first { $0.provider == id }
     }
 
+    public func setEnabled(_ provider: ProviderID, _ enabled: Bool) {
+        var updated = settings
+        if enabled {
+            updated.enabledProviders.insert(provider)
+        } else {
+            updated.enabledProviders.remove(provider)
+        }
+        settings = updated
+    }
+
     public func start() {
-        guard loopTask == nil else { return }
-        loopTask = Task { [weak self] in
-            await self?.runLoop()
+        if loopTask == nil {
+            loopTask = Task { [weak self] in
+                await self?.runLoop()
+            }
+        }
+        if let wakeSource, wakeTask == nil {
+            wakeTask = Task { [weak self] in
+                for await _ in wakeSource.wakes() {
+                    guard let self, !Task.isCancelled else { return }
+                    await self.handleWake()
+                }
+            }
         }
     }
 
     public func stop() {
         loopTask?.cancel()
         loopTask = nil
+        wakeTask?.cancel()
+        wakeTask = nil
+    }
+
+    /// Redacted plain-text report for the Diagnostics pane and bug reports (ADR 0006).
+    public func diagnosticsReport(
+        appVersion: String,
+        osVersion: String,
+        formatter: ResetFormatter = ResetFormatter()
+    ) -> String {
+        DiagnosticsReport.render(
+            statuses: statuses,
+            diagnostics: diagnostics,
+            settings: settings,
+            environment: DiagnosticsReport.Environment(
+                appVersion: appVersion,
+                osVersion: osVersion,
+                now: now(),
+                formatter: formatter
+            )
+        )
     }
 
     public func refreshNow() async {
@@ -95,6 +148,17 @@ public final class UsageMonitorModel {
         }
     }
 
+    /// A burst of wake notifications (lid open, display wake, network wake) must cost one poll.
+    private func handleWake() async {
+        let current = now()
+        if let last = lastWakeRefreshAt, current.timeIntervalSince(last) < wakeRefreshThreshold.timeInterval {
+            return
+        }
+        lastWakeRefreshAt = current
+        UsageLog.polling.info("system wake; refreshing")
+        await refreshNow()
+    }
+
     private func runLoop() async {
         await refreshLinkStates()
         while !Task.isCancelled {
@@ -111,6 +175,7 @@ public final class UsageMonitorModel {
         let current = now()
         let due = statuses.filter { status in
             status.isEnabled
+                && !status.isRefreshing
                 && (subset?.contains(status.provider) ?? true)
                 && (force || status.nextRetryAt.map { $0 <= current } ?? true)
         }.map(\.provider)
