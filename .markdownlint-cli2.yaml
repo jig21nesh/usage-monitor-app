@@ -1,0 +1,27 @@
+# Markdown lint for README, docs, ADRs and templates. Run locally with: npx markdownlint-cli2
+globs:
+  - "**/*.md"
+ignores:
+  - ".build/**"
+  - "build/**"
+  - "DerivedData/**"
+  - "node_modules/**"
+  - "**/.build/**"
+  - ".claude/**"
+  # Third-party text (Contributor Covenant), kept verbatim.
+  - "CODE_OF_CONDUCT.md"
+config:
+  default: true
+  MD013:
+    line_length: 120
+    code_blocks: false
+    tables: false
+    headings: false
+  MD024:
+    siblings_only: true
+  MD033: false
+  # Temporarily off: docs/adr/0004 has one fence without a language tag. Re-enable once it is tagged.
+  MD040: false
+  MD041: false
+  # Table pipe spacing is a style preference; compact "|---|" delimiter rows are allowed.
+  MD060: false

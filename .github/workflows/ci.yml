@@ -16,12 +16,21 @@ env:
   XCODE_APP: /Applications/Xcode_26.6.app
 
 jobs:
+  markdown-lint:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Globs, ignores and rules come from .markdownlint-cli2.yaml so local and CI runs match.
+      - uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff # v24.2.0
+
   core:
     name: Core tests and coverage gate
     runs-on: macos-26
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Select Xcode
         run: |
           if [ -d "$XCODE_APP" ]; then sudo xcode-select -s "$XCODE_APP"; fi
@@ -35,7 +44,7 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Select Xcode
         run: |
           if [ -d "$XCODE_APP" ]; then sudo xcode-select -s "$XCODE_APP"; fi
@@ -53,3 +62,36 @@ jobs:
           xcodebuild -project UsageMonitor.xcodeproj -scheme UsageMonitor \
             -destination 'platform=macOS' -configuration Debug \
             CODE_SIGNING_ALLOWED=NO -quiet build
+
+  ui-tests:
+    name: UI smoke tests
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Select Xcode
+        run: |
+          if [ -d "$XCODE_APP" ]; then sudo xcode-select -s "$XCODE_APP"; fi
+          xcodebuild -version
+      - name: Install XcodeGen
+        run: brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+      - name: Generate project with ad-hoc signing config
+        run: |
+          cp Config/Local.xcconfig.example Config/Local.xcconfig
+          scripts/bootstrap.sh
+      - name: Run UI tests (ad-hoc signed)
+        run: |
+          xcodebuild -project UsageMonitor.xcodeproj -scheme UsageMonitor \
+            -destination 'platform=macOS' -configuration Debug \
+            -only-testing:UsageMonitorUITests \
+            -resultBundlePath build/UITests.xcresult \
+            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO DEVELOPMENT_TEAM= \
+            test
+      - name: Upload result bundle on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ui-tests-xcresult
+          path: build/UITests.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
