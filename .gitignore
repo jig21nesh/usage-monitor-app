@@ -32,3 +32,6 @@ build/
 *.p12
 *.mobileprovision
 *.provisionprofile
+
+# Claude Code agent worktrees and local session files
+.claude/
