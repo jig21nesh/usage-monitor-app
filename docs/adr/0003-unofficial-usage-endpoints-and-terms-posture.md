@@ -37,7 +37,9 @@ an active Claude Code session.
 
 - Any vendor may change or close an endpoint without notice. The app degrades to "unavailable"
   for that provider and keeps showing the last successful snapshot marked stale.
-- Polling below roughly 3 minutes on Claude may trip its rate-limit bucket; the scaffold spike
-  measures this and the Claude adapter clamps its interval if needed.
+- Polling cadence on Claude was measured on 2026-09-19: eight consecutive requests at 60-second
+  intervals with `User-Agent: claude-cli/<version> (external, cli)` all returned HTTP 200 in
+  under half a second, so the 1-minute minimum interval is allowed. Backoff still applies if a
+  429 ever appears.
 - The maintainers accept the terms-of-service grey area on behalf of the project but not on
   behalf of users; users opt in per provider.

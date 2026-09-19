@@ -1,0 +1,99 @@
+name: UsageMonitor
+options:
+  bundleIdPrefix: com.curiouspilabs
+  deploymentTarget:
+    macOS: "26.0"
+  xcodeVersion: "26.6"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+  disabledValidations: [missingConfigFiles]
+configs:
+  Debug: debug
+  Release: release
+configFiles:
+  Debug: Config/Local.xcconfig
+  Release: Config/Local.xcconfig
+settings:
+  base:
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: YES
+    ENABLE_HARDENED_RUNTIME: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    DEAD_CODE_STRIPPING: YES
+    CODE_SIGN_STYLE: Automatic
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 0.1.0
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+packages:
+  UsageMonitorCore:
+    path: Packages/UsageMonitorCore
+targets:
+  UsageMonitor:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+    dependencies:
+      - package: UsageMonitorCore
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleName: UsageMonitor
+        CFBundleDisplayName: AI Usage Monitor
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSUIElement: true
+        LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
+        LSApplicationCategoryType: public.app-category.utilities
+        NSHumanReadableCopyright: "Copyright © 2026 Jignesh Kakkad. MIT License."
+        NSPrincipalClass: NSApplication
+    entitlements:
+      path: App/UsageMonitor.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true
+        com.apple.security.temporary-exception.files.home-relative-path.read-only:
+          - /.codex/auth.json
+          - /.grok/auth.json
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.curiouspilabs.UsageMonitor
+        PRODUCT_NAME: UsageMonitor
+  UsageMonitorUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: UsageMonitor
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.curiouspilabs.UsageMonitorUITests
+        TEST_TARGET_NAME: UsageMonitor
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+schemes:
+  UsageMonitor:
+    build:
+      targets:
+        UsageMonitor: all
+        UsageMonitorUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      coverageTargets:
+        - UsageMonitor
+        - package: UsageMonitorCore/UsageMonitorCore
+      targets:
+        - package: UsageMonitorCore/UsageMonitorCoreTests
+        - name: UsageMonitorUITests
+          parallelizable: false
+    archive:
+      config: Release

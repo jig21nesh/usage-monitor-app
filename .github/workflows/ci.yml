@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  XCODE_APP: /Applications/Xcode_26.6.app
+
+jobs:
+  core:
+    name: Core tests and coverage gate
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: Select Xcode
+        run: |
+          if [ -d "$XCODE_APP" ]; then sudo xcode-select -s "$XCODE_APP"; fi
+          xcodebuild -version
+          swift --version
+      - name: Tests with coverage gate
+        run: scripts/coverage-gate.sh
+
+  app:
+    name: Lint and app build
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: Select Xcode
+        run: |
+          if [ -d "$XCODE_APP" ]; then sudo xcode-select -s "$XCODE_APP"; fi
+          xcodebuild -version
+      - name: Install tools
+        run: |
+          brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+          brew list swiftlint >/dev/null 2>&1 || brew install swiftlint
+      - name: SwiftLint
+        run: swiftlint lint --strict --reporter github-actions-logging
+      - name: Generate project
+        run: scripts/bootstrap.sh
+      - name: Build app (unsigned)
+        run: |
+          xcodebuild -project UsageMonitor.xcodeproj -scheme UsageMonitor \
+            -destination 'platform=macOS' -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO -quiet build
