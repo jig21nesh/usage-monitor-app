@@ -1,0 +1,8 @@
+{
+  "mcpOAuth": {
+    "example-server": {
+      "accessToken": "mcp-FIXTURE-NOT-REAL",
+      "expiresAt": 1800000000000
+    }
+  }
+}

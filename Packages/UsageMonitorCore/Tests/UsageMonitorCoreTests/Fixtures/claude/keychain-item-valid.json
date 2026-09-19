@@ -1,0 +1,17 @@
+{
+  "claudeAiOauth": {
+    "accessToken": "sk-ant-oat01-FIXTURE-TOKEN-NOT-REAL",
+    "refreshToken": "sk-ant-ort01-FIXTURE-REFRESH-NOT-REAL",
+    "expiresAt": 1800000000000,
+    "refreshTokenExpiresAt": 1830000000000,
+    "scopes": ["user:inference", "user:profile", "org:create_api_key"],
+    "subscriptionType": "max",
+    "rateLimitTier": "default_claude_max_20x"
+  },
+  "mcpOAuth": {
+    "example-server": {
+      "accessToken": "mcp-FIXTURE-NOT-REAL",
+      "expiresAt": 1800000000000
+    }
+  }
+}

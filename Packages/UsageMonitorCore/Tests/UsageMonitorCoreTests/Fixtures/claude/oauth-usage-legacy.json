@@ -1,0 +1,26 @@
+{
+  "five_hour": {
+    "utilization": 15.0,
+    "resets_at": "2026-07-19T03:39:59.570750+00:00",
+    "limit_dollars": null,
+    "used_dollars": null,
+    "remaining_dollars": null
+  },
+  "seven_day": {
+    "utilization": 48.0,
+    "resets_at": "2026-07-23T14:59:59.570774+00:00"
+  },
+  "seven_day_oauth_apps": null,
+  "seven_day_opus": null,
+  "seven_day_sonnet": null,
+  "seven_day_cowork": null,
+  "extra_usage": {
+    "is_enabled": true,
+    "monthly_limit": null,
+    "used_credits": 0.0,
+    "utilization": null,
+    "currency": "USD",
+    "decimal_places": 2
+  },
+  "member_dashboard_available": false
+}
