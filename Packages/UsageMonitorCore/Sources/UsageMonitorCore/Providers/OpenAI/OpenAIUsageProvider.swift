@@ -1,11 +1,22 @@
 import Foundation
 
-/// Scaffold placeholder so the app runs end to end showing "not linked". Replaced by the
-/// provider implementation branch; the `live` signature is the contract that branch fulfils.
+/// ChatGPT / Codex subscription usage via the Codex CLI's stored login (ADR 0002, ADR 0003).
 public struct OpenAIUsageProvider: UsageProvider {
     public let id: ProviderID = .openAI
 
-    public init() {}
+    private let credentials: any CredentialSource<OpenAICredential>
+    private let client: OpenAIUsageClient
+    private let now: @Sendable () -> Date
+
+    public init(
+        credentials: any CredentialSource<OpenAICredential>,
+        client: OpenAIUsageClient,
+        now: @escaping @Sendable () -> Date
+    ) {
+        self.credentials = credentials
+        self.client = client
+        self.now = now
+    }
 
     public static func live(
         environment: UserEnvironment,
@@ -14,14 +25,34 @@ public struct OpenAIUsageProvider: UsageProvider {
         fileSystem: any FileSystem,
         now: @escaping @Sendable () -> Date
     ) -> OpenAIUsageProvider {
-        OpenAIUsageProvider()
+        OpenAIUsageProvider(
+            credentials: CodexAuthFileCredentialSource(environment: environment, fileSystem: fileSystem),
+            client: OpenAIUsageClient(http: http),
+            now: now
+        )
     }
 
     public func linkState() async -> LinkState {
-        .notLinked(.credentialsNotFound)
+        do {
+            let credential = try credentials.load()
+            return .linked(AccountInfo(
+                planName: OpenAIPlan.displayName(credential.planType),
+                accountLabel: credential.email,
+                origin: id.credentialOrigin
+            ))
+        } catch {
+            return .notLinked(error)
+        }
     }
 
     public func fetchUsage() async throws(ProviderError) -> UsageSnapshot {
-        throw .credentialsNotFound
+        let credential = try credentials.load()
+        let response = try await client.fetch(credential)
+        let snapshot = try OpenAIUsageMapper.snapshot(from: response.body, credential: credential, now: now())
+        let status = response.statusCode
+        let windowCount = snapshot.windows.count
+        // swiftlint:disable:next line_length
+        UsageLog.providers.info("openai usage fetched status=\(status, privacy: .public) windows=\(windowCount, privacy: .public)")
+        return snapshot
     }
 }

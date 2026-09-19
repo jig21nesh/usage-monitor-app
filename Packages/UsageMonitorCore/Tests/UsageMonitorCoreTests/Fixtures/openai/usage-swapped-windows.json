@@ -1,0 +1,15 @@
+{
+  "plan_type": "team",
+  "rate_limit": {
+    "primary_window": {
+      "used_percent": 70,
+      "limit_window_seconds": 604800,
+      "reset_at": 1790081000
+    },
+    "secondary_window": {
+      "used_percent": 5,
+      "limit_window_seconds": 18000,
+      "reset_at": 1789958460
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "plan_type": "pro",
+  "rate_limit": {
+    "allowed": true,
+    "limit_reached": false,
+    "primary_window": {
+      "used_percent": 12,
+      "limit_window_seconds": 18000,
+      "reset_after_seconds": 9000,
+      "reset_at": 1789958460
+    },
+    "secondary_window": {
+      "used_percent": 58,
+      "limit_window_seconds": 604800,
+      "reset_after_seconds": 123456,
+      "reset_at": 1790081000
+    }
+  },
+  "credits": {
+    "has_credits": false,
+    "unlimited": false,
+    "balance": null,
+    "approx_local_messages": null,
+    "approx_cloud_messages": null
+  },
+  "spend_control": null,
+  "additional_rate_limits": [],
+  "rate_limit_reached_type": null,
+  "rate_limit_reset_credits": null,
+  "account_id": "acct_sample",
+  "user_id": "user_sample",
+  "rate_limit_upsell": null,
+  "unknown_future_field": {"nested": true}
+}
