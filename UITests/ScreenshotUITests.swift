@@ -15,7 +15,7 @@ final class ScreenshotUITests: XCTestCase {
         let settings = UITestApp.settings(in: app)
         XCTAssertTrue(panel.staticTexts["panel.window.claude.session.percent"].waitForExistence(timeout: 15))
         XCTAssertTrue(onboarding.staticTexts["onboarding.provider.claude.command"].waitForExistence(timeout: 15))
-        XCTAssertTrue(app.staticTexts["settings.account.claude.command"].waitForExistence(timeout: 15))
+        XCTAssertTrue(UITestApp.waitForSettings(in: app))
 
         attach(panel, as: "panel")
         attach(onboarding, as: "onboarding")
