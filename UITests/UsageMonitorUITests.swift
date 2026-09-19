@@ -3,11 +3,77 @@ import XCTest
 final class UsageMonitorUITests: XCTestCase {
     @MainActor
     func testAppLaunchesAsBackgroundMenuBarExtra() {
-        let app = XCUIApplication()
-        app.launchEnvironment["USAGE_MONITOR_UITEST"] = "1"
-        app.launch()
+        let app = UITestApp.launch()
+        defer { app.terminate() }
         let isRunning = app.wait(for: .runningBackground, timeout: 15) || app.state == .runningForeground
         XCTAssertTrue(isRunning, "app should stay running as a menu bar extra")
-        app.terminate()
+    }
+
+    @MainActor
+    func testPanelShowsLinkedProvidersWithScreenshotNumbers() {
+        let app = UITestApp.launch(arguments: ["-openPanelPreview"])
+        defer { app.terminate() }
+        let panel = UITestApp.panel(in: app)
+
+        XCTAssertTrue(panel.staticTexts["panel.provider.claude.name"].waitForExistence(timeout: 15))
+        XCTAssertTrue(panel.staticTexts["panel.provider.openai.name"].exists)
+        XCTAssertTrue(panel.staticTexts["panel.provider.grok.name"].exists)
+
+        XCTAssertTrue(panel.staticTexts["panel.window.claude.session.percent"].waitForExistence(timeout: 10))
+        XCTAssertEqual(panel.staticTexts["panel.window.claude.session.percent"].text, "0% used")
+        XCTAssertEqual(panel.staticTexts["panel.window.claude.weekly.all.percent"].text, "29% used")
+        XCTAssertEqual(panel.staticTexts["panel.window.claude.weekly.fable.percent"].text, "56% used")
+        XCTAssertEqual(panel.staticTexts["panel.window.openai.weekly.percent"].text, "58% used")
+        XCTAssertEqual(panel.staticTexts["panel.window.grok.weekly.percent"].text, "4% used")
+
+        XCTAssertTrue(panel.staticTexts["panel.window.claude.session.reset"].text.hasPrefix("Resets in 4 hr"))
+        XCTAssertTrue(panel.staticTexts["panel.window.claude.weekly.all.reset"].text.hasPrefix("Resets "))
+        XCTAssertTrue(panel.staticTexts["panel.provider.claude.plan"].text.hasSuffix("Max (20x)"))
+        XCTAssertTrue(panel.staticTexts["panel.lastUpdated"].text.hasPrefix("Updated "))
+        XCTAssertTrue(panel.buttons["panel.refresh"].exists)
+        XCTAssertTrue(panel.buttons["panel.settings"].exists)
+        XCTAssertTrue(panel.buttons["panel.quit"].exists)
+    }
+
+    @MainActor
+    func testNotLinkedScenarioShowsLoginCommandAndRelink() {
+        let app = UITestApp.launch(scenario: .notLinked, arguments: ["-openPanelPreview"])
+        defer { app.terminate() }
+        let panel = UITestApp.panel(in: app)
+
+        XCTAssertTrue(panel.staticTexts["panel.provider.claude.loginCommand"].waitForExistence(timeout: 15))
+        XCTAssertEqual(panel.staticTexts["panel.provider.claude.loginCommand"].text, "claude login")
+        XCTAssertTrue(panel.buttons["panel.provider.claude.relink"].exists)
+        XCTAssertTrue(panel.buttons["panel.provider.claude.loginCommand.copy"].exists)
+        XCTAssertFalse(panel.staticTexts["panel.window.claude.session.percent"].exists)
+        XCTAssertTrue(panel.staticTexts["panel.window.openai.weekly.percent"].exists)
+    }
+
+    @MainActor
+    func testStaleScenarioKeepsNumbersAndFlagsStale() {
+        let app = UITestApp.launch(scenario: .stale, arguments: ["-openPanelPreview"])
+        defer { app.terminate() }
+        let panel = UITestApp.panel(in: app)
+
+        XCTAssertTrue(panel.staticTexts["panel.provider.claude.error"].waitForExistence(timeout: 15))
+        XCTAssertEqual(panel.staticTexts["panel.window.claude.weekly.fable.percent"].text, "56% used")
+        XCTAssertTrue(panel.staticTexts["Stale"].exists)
+    }
+
+    @MainActor
+    func testOnboardingAppearsOnFirstLaunchAndDoneDismissesIt() {
+        let app = UITestApp.launch(firstLaunch: true)
+        defer { app.terminate() }
+        let window = UITestApp.onboarding(in: app)
+
+        XCTAssertTrue(window.waitForExistence(timeout: 15))
+        XCTAssertTrue(window.staticTexts["onboarding.provider.claude.command"].waitForExistence(timeout: 10))
+        XCTAssertEqual(window.staticTexts["onboarding.provider.claude.command"].text, "claude login")
+        XCTAssertTrue(window.buttons["onboarding.provider.claude.recheck"].exists)
+        XCTAssertTrue(window.checkBoxes["onboarding.provider.grok.toggle"].exists)
+        XCTAssertTrue(window.checkBoxes["settings.launchAtLogin"].exists)
+
+        window.buttons["onboarding.done"].click()
+        XCTAssertTrue(UITestApp.waitForDisappearance(of: window))
     }
 }
