@@ -1,7 +1,7 @@
 # ADR 0004: App Sandbox on with read-only exceptions, Hardened Runtime on
 
 Date: 2026-09-19
-Status: Proposed (to be confirmed by the scaffold spike)
+Status: Accepted
 
 ## Context
 
@@ -20,11 +20,25 @@ Options:
 
 ## Decision
 
-Attempt option 2 first. The scaffold pull request includes a spike that builds the sandboxed app
-and verifies (a) reading both files through the real home directory resolved with `getpwuid`,
-and (b) `SecItemCopyMatching` reaching the Claude Code item (an `errSecInteractionNotAllowed`
-result with UI suppressed proves the sandbox is not the blocker). If the spike fails, fall back
-to option 1 and mark this ADR superseded with the evidence.
+Adopt option 2: App Sandbox on, Hardened Runtime on, outbound network only, read-only
+home-relative exceptions for the two credential files.
+
+Evidence (spike run 2026-09-19 on macOS 27.0 with Xcode 26.6, sandboxed Debug build executed
+directly with `USAGE_MONITOR_SPIKE=1`):
+
+```
+home=/Users/<user>/ container=/Users/<user>/Library/Containers/com.curiouspilabs.UsageMonitor/Data
+file=codex ok bytes=3968
+file=grok ok bytes=1629
+keychain ok present=true bytes=524
+```
+
+- `NSHomeDirectory()` returned the container while `getpwuid` returned the real home, confirming
+  the sandbox was active and the resolver in `UserEnvironment` is required.
+- Both auth files were readable through the temporary-exception entitlement.
+- `SecItemCopyMatching` returned the Claude Code item with interaction disallowed and no consent
+  dialog on this machine. Other machines may still show the standard keychain consent dialog
+  depending on the item's access control list; onboarding keeps explaining it.
 
 ## Consequences
 

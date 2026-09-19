@@ -1,0 +1,9 @@
+# Test code may force-unwrap and force-try: a crash is a loud, correct test failure.
+disabled_rules:
+  - force_unwrapping
+  - force_try
+  - force_cast
+  - implicitly_unwrapped_optional
+  - function_body_length
+  - type_body_length
+  - file_length
