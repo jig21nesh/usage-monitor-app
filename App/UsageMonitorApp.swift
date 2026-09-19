@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 import UsageMonitorCore
 
@@ -13,8 +12,8 @@ struct UsageMonitorApp: App {
             MenuBarPanelView()
                 .environment(model)
         } label: {
-            Label("AI Usage Monitor", systemImage: "gauge.with.dots.needle.33percent")
-                .labelStyle(.iconOnly)
+            MenuBarLabel()
+                .environment(model)
         }
         .menuBarExtraStyle(.window)
 
@@ -22,16 +21,20 @@ struct UsageMonitorApp: App {
             SettingsView()
                 .environment(model)
         }
-    }
-}
 
-/// Starts and stops the poll loop with the process, independent of any window being open.
-final class AppDelegate: NSObject, NSApplicationDelegate {
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        AppComposition.model.start()
-    }
+        Window("Welcome to AI Usage Monitor", id: WindowID.onboarding) {
+            OnboardingView()
+                .environment(model)
+        }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
 
-    func applicationWillTerminate(_ notification: Notification) {
-        AppComposition.model.stop()
+        #if DEBUG
+        Window("Panel Preview", id: WindowID.panelPreview) {
+            MenuBarPanelView()
+                .environment(model)
+        }
+        .windowResizability(.contentSize)
+        #endif
     }
 }
