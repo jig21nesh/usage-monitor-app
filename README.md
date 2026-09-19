@@ -1,5 +1,10 @@
 # AI Usage Monitor
 
+<p align="center">
+  <img src="docs/images/app-icon-256.png" width="128" height="128"
+       alt="AI Usage Monitor app icon: three glowing gauge rings on an indigo-to-teal squircle">
+</p>
+
 A macOS menu bar extra that shows how much of your **Claude**, **OpenAI (ChatGPT / Codex)** and
 **Grok** subscription limits you have used, with session and weekly windows, reset times and your
 plan name, refreshed in the background every few minutes.
@@ -356,6 +361,14 @@ Conventions:
 - Read the [ADR index](docs/adr/README.md) before changing provider, credential, sandbox,
   testing or observability behaviour, and write a new ADR for any new pattern or trade-off.
 - Project rules for contributors and AI assistants live in [`CLAUDE.md`](CLAUDE.md).
+
+### App icon
+
+The icon is drawn in code so it can be regenerated and reviewed in a pull request:
+
+```sh
+swift scripts/generate-app-icon.swift App/Assets.xcassets/AppIcon.appiconset
+```
 
 ## Roadmap
 
