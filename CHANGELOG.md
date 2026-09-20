@@ -13,6 +13,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Distribution: `scripts/build-dmg.sh` builds a DMG (Developer ID signed and notarised when
+  credentials exist, ad-hoc otherwise) and a tag-triggered release workflow publishes it; see
+  `docs/RELEASING.md`.
 - Diagnostics "Copy report" button (redacted text report), percent style setting (used or
   left), and wake-from-sleep refresh wired into the app.
 

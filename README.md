@@ -79,7 +79,33 @@ Homebrew tap are on the [roadmap](#roadmap).
 
 ## Installation
 
-Pre-built, notarised releases and a Homebrew tap are planned. Until then, build from source:
+### From a release DMG
+
+1. Download the latest `AIUsageMonitor-<version>.dmg` from the
+   [Releases page](https://github.com/jig21nesh/usage-monitor-app/releases).
+2. Open the DMG and drag **AI Usage Monitor** onto the **Applications** shortcut.
+3. Eject the DMG and launch the app from Applications.
+
+**Builds are currently unsigned.** Until the project has an Apple Developer ID, macOS refuses
+to open the app the first time. To allow it once:
+
+1. Double-click the app; macOS says it cannot verify the developer. Click **Done**.
+2. Open **System Settings > Privacy & Security**, scroll to **Security**, and click
+   **Open Anyway** next to the message about AI Usage Monitor (the button stays for about an
+   hour).
+3. Confirm with your login password. The app opens and macOS remembers the decision.
+
+Optional: verify the download against the checksum published with the release:
+
+```sh
+shasum -a 256 -c AIUsageMonitor-<version>-unsigned.dmg.sha256
+```
+
+Release builds are produced by `scripts/build-dmg.sh` and the `Release` GitHub Actions
+workflow; maintainers should read [docs/RELEASING.md](docs/RELEASING.md) for signing,
+notarisation and tagging.
+
+### From source
 
 ```sh
 brew install xcodegen swiftlint
@@ -89,6 +115,8 @@ cp Config/Local.xcconfig.example Config/Local.xcconfig   # set DEVELOPMENT_TEAM 
 scripts/bootstrap.sh                                      # generates UsageMonitor.xcodeproj
 open UsageMonitor.xcodeproj                               # Product > Run
 ```
+
+To produce your own DMG instead: `scripts/build-dmg.sh` (add `--dry-run` to see the plan).
 
 The generated Xcode project and your local signing config are gitignored on purpose; see
 [Development](#development).
