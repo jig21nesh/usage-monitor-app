@@ -100,7 +100,7 @@ enum AboutInfo {
     static let tagline = "Curious Pi Labs builds products with curiosity, precision, and rigor. "
         + "Every product is tested, measured, and proven before it ships."
 
-    static let legal = "Copyright © 2026 Jignesh Kakkad. Released under the MIT License. "
+    static let legal = "Copyright © 2026 Curious Pi Labs. Released under the MIT License. "
         + "Claude, ChatGPT, Codex, Grok, GitHub Copilot, Cursor and Muse are trademarks of their "
         + "respective owners; this project is not affiliated with or endorsed by them."
 
