@@ -10,8 +10,8 @@ struct MenuBarLabel: View {
     @State private var didRoute = false
 
     var body: some View {
-        Label("AI Usage Monitor", systemImage: symbolName)
-            .labelStyle(.iconOnly)
+        Image(nsImage: MenuBarIconRenderer.image(for: status, colored: model.settings.colorsMenuBarIcon))
+            .accessibilityLabel(MenuBarIconRenderer.accessibilityLabel(for: status))
             .accessibilityIdentifier("menubar.extra")
             .task {
                 guard !didRoute else { return }
@@ -25,21 +25,5 @@ struct MenuBarLabel: View {
             }
     }
 
-    /// The gauge fills with the most-used window across visible providers.
-    private var symbolName: String {
-        let peak = model.visibleStatuses
-            .compactMap { $0.snapshot?.mostUsedWindow?.usedPercent }
-            .max() ?? 0
-        return Self.gaugeSymbol(forPercent: peak)
-    }
-
-    static func gaugeSymbol(forPercent percent: Double) -> String {
-        switch percent {
-        case ..<17: "gauge.with.dots.needle.0percent"
-        case ..<42: "gauge.with.dots.needle.33percent"
-        case ..<59: "gauge.with.dots.needle.50percent"
-        case ..<84: "gauge.with.dots.needle.67percent"
-        default: "gauge.with.dots.needle.100percent"
-        }
-    }
+    private var status: MenuBarStatus { model.menuBarStatus }
 }

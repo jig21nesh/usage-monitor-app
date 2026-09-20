@@ -5,6 +5,7 @@ import UsageMonitorCore
 /// Read-only view of the local counters (ADR 0006). Nothing here ever contains a credential.
 struct DiagnosticsSettingsTab: View {
     @Environment(UsageMonitorModel.self) private var model
+    @Environment(\.openWindow) private var openWindow
     @State private var copiedAt: Date?
 
     private struct Row: Identifiable {
@@ -47,6 +48,11 @@ struct DiagnosticsSettingsTab: View {
             .foregroundStyle(.secondary)
             .accessibilityIdentifier("settings.diagnostics.footer")
             HStack {
+                Button("About…") {
+                    AppActivation.bringToFront()
+                    openWindow(id: WindowID.about)
+                }
+                .accessibilityIdentifier("settings.diagnostics.about")
                 Spacer()
                 if copiedAt != nil {
                     Text("Copied").font(.caption).foregroundStyle(.secondary)

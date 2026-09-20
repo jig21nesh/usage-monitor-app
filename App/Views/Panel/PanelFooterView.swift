@@ -5,6 +5,7 @@ import UsageMonitorCore
 struct PanelFooterView: View {
     @Environment(UsageMonitorModel.self) private var model
     @Environment(\.openSettings) private var openSettings
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         HStack(spacing: 10) {
@@ -13,6 +14,15 @@ struct PanelFooterView: View {
                 .foregroundStyle(.secondary)
                 .accessibilityIdentifier("panel.lastUpdated")
             Spacer()
+            Button {
+                AppActivation.bringToFront()
+                openWindow(id: WindowID.about)
+            } label: {
+                Image(systemName: "info.circle")
+            }
+            .help("About AI Usage Monitor")
+            .accessibilityLabel("About")
+            .accessibilityIdentifier("panel.about")
             Button {
                 Task { await model.refreshNow() }
             } label: {

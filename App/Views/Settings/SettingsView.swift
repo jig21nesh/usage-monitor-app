@@ -13,6 +13,9 @@ struct SettingsView: View {
             Tab("Refresh", systemImage: "clock.arrow.2.circlepath") {
                 RefreshSettingsTab()
             }
+            Tab("Menu bar", systemImage: "menubar.rectangle") {
+                MenuBarSettingsTab()
+            }
             Tab("Diagnostics", systemImage: "stethoscope") {
                 DiagnosticsSettingsTab()
             }

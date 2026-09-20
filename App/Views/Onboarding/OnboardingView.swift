@@ -38,7 +38,19 @@ struct OnboardingView: View {
             .padding()
         }
         .frame(width: 640, height: 640)
-        .task { await model.refreshLinkStates() }
+        .task {
+            await model.refreshLinkStates()
+            applyDetectedDefaults()
+        }
+    }
+
+    /// First launch only: show the providers whose login was found, so a Mac with two tools does
+    /// not start with five "not linked" cards switched on (ADR 0008).
+    private func applyDetectedDefaults() {
+        guard !model.settings.hasCompletedOnboarding else { return }
+        let linked = Set(model.statuses.filter(\.link.isLinked).map(\.provider))
+        guard !linked.isEmpty else { return }
+        model.settings.enabledProviders = linked
     }
 
     private var header: some View {
@@ -46,8 +58,8 @@ struct OnboardingView: View {
             Text("Welcome to AI Usage Monitor")
                 .font(.largeTitle.weight(.semibold))
             Text("""
-                See how much of your Claude, OpenAI and Grok subscription limits you have used, \
-                right from the menu bar.
+                See how much of your AI subscription limits you have used, right from the menu bar. \
+                Providers whose login was found on this Mac are switched on for you.
                 """)
                 .font(.body)
                 .foregroundStyle(.secondary)
@@ -57,7 +69,8 @@ struct OnboardingView: View {
     private var howItWorks: some View {
         GroupBox("How this works, and what it never does") {
             VStack(alignment: .leading, spacing: 6) {
-                bullet("It reads the login that Claude Code, Codex CLI and Grok Build CLI already store on this Mac.")
+                bullet("It reads the login that each vendor's own CLI or app (Claude Code, Codex, Grok Build, "
+                    + "GitHub CLI, Cursor, Muse Code, OpenCode) already stores on this Mac.")
                 bullet("Each refresh makes one read-only request per provider with that login. "
                     + "Polling does not consume your quota.")
                 bullet("It never stores, refreshes or transmits your tokens anywhere, and it never sends telemetry.")

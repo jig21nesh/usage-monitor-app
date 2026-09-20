@@ -46,12 +46,37 @@ enum StartupRouter {
             if options.openSettings {
                 SettingsOpener.open(using: openSettings)
             }
+            if options.openAbout {
+                AppActivation.bringToFront()
+                openWindow(id: WindowID.about)
+            }
             try? await Task.sleep(for: .milliseconds(400))
+            if options.isUITesting {
+                moveWindowsToPrimaryScreen()
+            }
             let titles = NSApp.windows.filter(\.isVisible).map(\.title).joined(separator: "|")
             UsageLog.polling.notice("startup attempt=\(attempt, privacy: .public) windows=\(titles, privacy: .public)")
-            if !titles.isEmpty || (!options.openPanelPreview && !wantsOnboarding && !options.openSettings) {
+            let wantsAnything = options.openPanelPreview || wantsOnboarding || options.openSettings || options.openAbout
+            if !titles.isEmpty || !wantsAnything {
                 return
             }
+        }
+    }
+
+    /// UI tests click by screen coordinates. On a multi-display Mac SwiftUI centres new windows on
+    /// whichever screen holds the pointer, where they may be covered or off the primary display,
+    /// so in test mode every window is parked on the primary screen instead.
+    private static func moveWindowsToPrimaryScreen() {
+        guard let primary = NSScreen.screens.first else { return }
+        var offset: CGFloat = 0
+        for window in NSApp.windows where window.isVisible && window.styleMask.contains(.titled) {
+            let frame = window.frame
+            let origin = CGPoint(
+                x: primary.visibleFrame.minX + 40 + offset,
+                y: primary.visibleFrame.maxY - frame.height - 40 - offset
+            )
+            window.setFrameOrigin(origin)
+            offset += 32
         }
     }
 }

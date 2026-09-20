@@ -29,6 +29,13 @@ struct UsageMonitorApp: App {
         .windowResizability(.contentSize)
         .defaultPosition(.center)
 
+        Window("About AI Usage Monitor", id: WindowID.about) {
+            AboutView()
+                .environment(model)
+        }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
+
         #if DEBUG
         Window("Panel Preview", id: WindowID.panelPreview) {
             MenuBarPanelView()
