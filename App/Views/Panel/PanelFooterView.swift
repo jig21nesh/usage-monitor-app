@@ -15,8 +15,7 @@ struct PanelFooterView: View {
                 .accessibilityIdentifier("panel.lastUpdated")
             Spacer()
             Button {
-                AppActivation.bringToFront()
-                openWindow(id: WindowID.about)
+                AppActivation.open(WindowID.about, using: openWindow)
             } label: {
                 Image(systemName: "info.circle")
             }

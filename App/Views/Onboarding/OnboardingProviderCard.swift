@@ -69,7 +69,8 @@ struct OnboardingProviderCard: View {
         case .linked(let info):
             "Using the \(info.origin) login on this Mac" + (info.planName.map { " · \($0)" } ?? "") + "."
         case .notLinked(let error):
-            "\(error.userMessage) Sign in with \(status.provider.credentialOrigin), then press Re-check."
+            // The login command is shown right below, so the card does not repeat "sign in" wording.
+            "\(error.userMessage) Run the command below, then press Re-check."
         }
     }
 

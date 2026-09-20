@@ -11,6 +11,7 @@ enum SettingsOpener {
         Task {
             try? await Task.sleep(for: .milliseconds(500))
             let opened = AppActivation.hasSettingsWindow
+            AppActivation.surfaceRegularWindows()
             UsageLog.polling.notice("settings open via environment action=\(opened, privacy: .public)")
             guard !opened else { return }
             NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
@@ -51,6 +52,7 @@ enum StartupRouter {
                 openWindow(id: WindowID.about)
             }
             try? await Task.sleep(for: .milliseconds(400))
+            AppActivation.surfaceRegularWindows()
             if options.isUITesting {
                 moveWindowsToPrimaryScreen()
             }

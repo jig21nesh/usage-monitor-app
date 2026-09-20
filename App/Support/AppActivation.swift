@@ -1,4 +1,5 @@
 import AppKit
+import SwiftUI
 
 enum WindowID {
     static let onboarding = "onboarding"
@@ -15,6 +16,27 @@ enum AppActivation {
             NSApp.setActivationPolicy(.regular)
         }
         NSApp.activate()
+    }
+
+    /// SwiftUI opens windows on the Space and display that hold the pointer; on a multi-display Mac
+    /// that can be a Space the user is not looking at. Pull every regular window onto the active
+    /// Space and in front once it exists.
+    static func surfaceRegularWindows() {
+        let regular = NSApp.windows.filter { $0.isVisible && $0.styleMask.contains(.titled) && $0.level == .normal }
+        for window in regular {
+            window.collectionBehavior.insert(.moveToActiveSpace)
+            window.makeKeyAndOrderFront(nil)
+        }
+    }
+
+    /// Opens a SwiftUI window scene and, once it exists, pulls it onto the active Space.
+    static func open(_ id: String, using openWindow: OpenWindowAction) {
+        bringToFront()
+        openWindow(id: id)
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            surfaceRegularWindows()
+        }
     }
 
     static func returnToAccessoryIfNoWindows(excluding closing: NSWindow? = nil) {
