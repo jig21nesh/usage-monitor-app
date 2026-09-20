@@ -13,9 +13,10 @@ struct DiagnosticsSettingsTab: View {
         let status: ProviderStatus?
     }
 
+    /// One row per registered provider, so test builds with three providers show three rows.
     private var rows: [Row] {
-        ProviderID.allCases.map { id in
-            Row(id: id, diagnostics: model.diagnostics[id] ?? ProviderDiagnostics(), status: model.status(for: id))
+        model.statuses.map { status in
+            Row(id: status.provider, diagnostics: model.diagnostics[status.provider] ?? ProviderDiagnostics(), status: status)
         }
     }
 
@@ -68,9 +69,7 @@ struct DiagnosticsSettingsTab: View {
     }
 
     private var enabledList: String {
-        let names = ProviderID.allCases
-            .filter { model.settings.enabledProviders.contains($0) }
-            .map(\.displayName)
+        let names = model.visibleStatuses.map(\.provider.displayName)
         return names.isEmpty ? "none" : names.joined(separator: ", ")
     }
 
