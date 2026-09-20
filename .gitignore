@@ -19,6 +19,7 @@ Config/Local.xcconfig
 # Coverage and build output
 coverage/
 build/
+dist/
 *.profraw
 *.profdata
 
