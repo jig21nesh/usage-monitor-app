@@ -1,0 +1,7 @@
+{
+  "api_key": "LLM|000000000000|placeholder-not-a-real-key",
+  "require_payment": false,
+  "is_subs_active": true,
+  "subs_tier_name": "  Everyday Usage  ",
+  "user_email": "dev@example.com"
+}

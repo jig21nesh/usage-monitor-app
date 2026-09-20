@@ -1,0 +1,18 @@
+{
+  "api_key": "LLM|000000000000|placeholder-not-a-real-key",
+  "require_payment": false,
+  "is_subs_active": true,
+  "subs_tier_name": "Power Usage",
+  "user_email": "dev@example.com",
+  "subs_usage": {
+    "window": {
+      "used_percent": 37,
+      "window_duration_mins": 300,
+      "resets_at": 1790005000
+    },
+    "weekly": {
+      "used_percent": 12.5,
+      "resets_at": 1790400000
+    }
+  }
+}
