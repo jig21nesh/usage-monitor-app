@@ -1,0 +1,28 @@
+{
+  "login": "hubot",
+  "copilot_plan": "business",
+  "access_type_sku": "copilot_business_seat",
+  "quota_snapshots": {
+    "chat": {
+      "percent_remaining": 60.0,
+      "unlimited": false,
+      "quota_reset_at": 1790000000,
+      "remaining": 30,
+      "entitlement": 50
+    },
+    "completions": {
+      "percent_remaining": 25.0,
+      "unlimited": false,
+      "quota_reset_at": 1789900000,
+      "remaining": 500,
+      "entitlement": 2000
+    },
+    "premium_interactions": {
+      "percent_remaining": 90.0,
+      "unlimited": false,
+      "quota_reset_at": 1790000000,
+      "remaining": 270,
+      "entitlement": 300
+    }
+  }
+}
