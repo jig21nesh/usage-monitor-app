@@ -1,8 +1,9 @@
 # AI Usage Monitor
 
-macOS menu bar extra that shows Claude, OpenAI (ChatGPT/Codex) and Grok subscription usage
-limits (session and weekly windows) by reusing the credentials the vendors' own CLIs already
-store on the Mac. Open source, MIT.
+macOS menu bar extra that shows Claude, OpenAI (ChatGPT/Codex), Grok, GitHub Copilot, Cursor,
+Muse Code (Meta) and OpenCode Go subscription usage limits (session, weekly and monthly windows)
+by reusing the credentials the vendors' own CLIs and apps already store on the Mac. Open source,
+MIT.
 
 ## Stack
 
@@ -46,7 +47,10 @@ xcodebuild -project UsageMonitor.xcodeproj -scheme UsageMonitor -destination 'pl
 - Never refresh or rotate a vendor token. On 401, re-read the store once, then fail closed.
 - Never log a token, cookie, JWT or response body. Log outcomes, status codes and durations.
   Use `privacy: .private` for anything derived from credentials.
-- Never call inference endpoints. Usage endpoints are read-only GETs. See `docs/adr/0003`.
+- Never call inference endpoints. Usage requests are read-only: GET, or POST to idempotent usage
+  RPCs where the vendor accepts nothing else (Cursor, Muse Code). See `docs/adr/0003`.
+- Read-only POST is allowed for idempotent usage RPCs (Cursor, Muse Code); any credential a
+  response returns is decoded past and never kept (ADR 0003 amendment).
 - Cap response bodies at 1 MB. Validate every decoded field before use.
 
 ## Decisions

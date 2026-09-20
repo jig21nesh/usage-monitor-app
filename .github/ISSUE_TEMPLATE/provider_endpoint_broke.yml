@@ -16,6 +16,10 @@ body:
         - Claude
         - OpenAI
         - Grok
+        - GitHub Copilot
+        - Cursor
+        - Muse Code
+        - OpenCode Go
     validations:
       required: true
   - type: input
