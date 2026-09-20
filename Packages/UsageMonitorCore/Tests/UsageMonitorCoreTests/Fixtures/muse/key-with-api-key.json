@@ -1,0 +1,18 @@
+{
+  "api_key": "LLM|SECRETKEY",
+  "require_payment": false,
+  "is_subs_active": true,
+  "subs_tier_name": "High Usage",
+  "user_email": "SECRETKEY@example.com",
+  "subs_usage": {
+    "window": {
+      "used_percent": 140,
+      "window_duration_mins": 600,
+      "resets_at": 1790005000000
+    },
+    "weekly": {
+      "used_percent": 5,
+      "resets_at": 1
+    }
+  }
+}
