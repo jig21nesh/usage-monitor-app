@@ -3,6 +3,7 @@ import AppKit
 enum WindowID {
     static let onboarding = "onboarding"
     static let panelPreview = "panel-preview"
+    static let about = "about"
 }
 
 /// An `LSUIElement` app has no Dock icon and cannot bring a window to the front on its own.

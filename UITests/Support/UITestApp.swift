@@ -11,6 +11,9 @@ enum UITestApp {
     static let settingsWindowID = "com_apple_SwiftUI_Settings_window"
     static let panelPreviewTitle = "Panel Preview"
     static let onboardingTitle = "Welcome to AI Usage Monitor"
+    static let aboutTitle = "About AI Usage Monitor"
+    static let allProviders = ["claude", "openai", "grok", "copilot", "cursor", "muse", "opencode-go"]
+    static let linkedProviders = ["claude", "openai", "grok", "copilot", "muse"]
 
     @MainActor
     static func launch(
@@ -49,6 +52,22 @@ enum UITestApp {
         app.windows[onboardingTitle]
     }
 
+    @MainActor
+    static func about(in app: XCUIApplication) -> XCUIElement {
+        app.windows[aboutTitle]
+    }
+
+    /// Waits until a switch reports the wanted state, for values that settle asynchronously.
+    @MainActor
+    static func waitForSwitch(_ element: XCUIElement, toBe wanted: Bool, timeout: TimeInterval = 10) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if element.exists, element.isOn == wanted { return true }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
+        return element.exists && element.isOn == wanted
+    }
+
     /// The Settings toolbar is queryable as soon as the window exists; the initially selected
     /// tab's form content is not (see the skipped `testAccountsTabContentIsQueryableAtLaunch`).
     @MainActor
@@ -56,12 +75,17 @@ enum UITestApp {
         settings(in: app).buttons["Accounts"].waitForExistence(timeout: timeout)
     }
 
-    /// Settings tabs are toolbar buttons titled after the tab.
+    /// Settings tabs are toolbar buttons titled after the tab. A coordinate click is the fallback
+    /// when the hit test fails, which happens when the window sits on a secondary display.
     @MainActor
     static func selectSettingsTab(named name: String, in app: XCUIApplication, timeout: TimeInterval = 10) -> Bool {
         let button = settings(in: app).buttons[name]
         guard button.waitForExistence(timeout: timeout) else { return false }
-        button.click()
+        if button.isHittable {
+            button.click()
+        } else {
+            button.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click()
+        }
         return true
     }
 

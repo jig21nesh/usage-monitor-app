@@ -7,20 +7,20 @@ struct ProvidersSettingsTab: View {
     var body: some View {
         Form {
             Section("Show in the menu bar panel") {
-                ForEach(ProviderID.allCases) { id in
-                    Toggle(isOn: binding(for: id)) {
+                ForEach(model.statuses) { status in
+                    Toggle(isOn: binding(for: status.provider)) {
                         HStack(spacing: 8) {
-                            Text(id.displayName)
-                            if id.isExperimental { ExperimentalTag() }
+                            Text(status.provider.displayName)
+                            if status.provider.isExperimental { ExperimentalTag() }
                         }
                     }
-                    .accessibilityIdentifier("settings.provider.\(id.rawValue).toggle")
+                    .accessibilityIdentifier("settings.provider.\(status.provider.rawValue).toggle")
                 }
             }
             Section {
                 Text("""
-                    Grok relies on the endpoint xAI's own Grok Build CLI uses. It is the most likely of the \
-                    three to change, so treat it as experimental.
+                    Providers marked Experimental rely on the newest or least documented vendor endpoints, \
+                    so they are the most likely to change or pause without notice.
                     """)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -32,15 +32,7 @@ struct ProvidersSettingsTab: View {
     private func binding(for id: ProviderID) -> Binding<Bool> {
         Binding(
             get: { model.settings.enabledProviders.contains(id) },
-            set: { isOn in
-                var settings = model.settings
-                if isOn {
-                    settings.enabledProviders.insert(id)
-                } else {
-                    settings.enabledProviders.remove(id)
-                }
-                model.settings = settings
-            }
+            set: { model.setEnabled(id, $0) }
         )
     }
 }

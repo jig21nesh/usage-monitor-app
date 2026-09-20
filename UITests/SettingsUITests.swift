@@ -2,7 +2,7 @@ import XCTest
 
 final class SettingsUITests: XCTestCase {
     @MainActor
-    func testSettingsHasFourTabsAndProviderToggleHidesPanelSection() {
+    func testSettingsHasFiveTabsAndProviderToggleHidesPanelSection() {
         let app = UITestApp.launch(arguments: ["-openPanelPreview", "-openSettings"])
         defer { app.terminate() }
         let panel = UITestApp.panel(in: app)
@@ -10,7 +10,7 @@ final class SettingsUITests: XCTestCase {
         XCTAssertTrue(panel.staticTexts["panel.provider.grok.name"].waitForExistence(timeout: 15))
         XCTAssertTrue(UITestApp.waitForSettings(in: app))
 
-        for tab in ["Providers", "Refresh", "Diagnostics", "Accounts"] {
+        for tab in ["Providers", "Refresh", "Menu bar", "Diagnostics", "Accounts"] {
             XCTAssertTrue(UITestApp.selectSettingsTab(named: tab, in: app), "tab \(tab) should be selectable")
         }
         XCTAssertTrue(app.buttons["settings.showWelcome"].waitForExistence(timeout: 5))
@@ -53,6 +53,39 @@ final class SettingsUITests: XCTestCase {
     }
 
     @MainActor
+    func testMenuBarTabControlsAndProviderChoicePersists() {
+        let first = UITestApp.launch(arguments: ["-openSettings"], reset: true)
+        XCTAssertTrue(UITestApp.waitForSettings(in: first))
+        XCTAssertTrue(UITestApp.selectSettingsTab(named: "Menu bar", in: first))
+
+        let picker = first.popUpButtons["settings.menubar.provider"]
+        XCTAssertTrue(picker.waitForExistence(timeout: 10))
+        XCTAssertEqual(picker.value as? String, "Automatic")
+        XCTAssertTrue(first.switches["settings.menubar.color"].exists)
+        XCTAssertTrue(first.switches["settings.menubar.color"].isOn)
+        XCTAssertTrue(first.steppers["settings.menubar.warning"].exists)
+        XCTAssertTrue(first.steppers["settings.menubar.critical"].exists)
+        XCTAssertTrue(first.staticTexts["settings.menubar.tracking"].exists)
+        XCTAssertTrue(first.staticTexts["settings.menubar.tracking"].text.contains("% used"))
+
+        picker.click()
+        let option = first.menuItems["OpenAI"]
+        XCTAssertTrue(option.waitForExistence(timeout: 5))
+        option.click()
+        XCTAssertEqual(picker.value as? String, "OpenAI")
+        XCTAssertTrue(first.staticTexts["settings.menubar.tracking"].text.hasPrefix("OpenAI session"))
+        first.terminate()
+
+        let second = UITestApp.launch(arguments: ["-openSettings"], reset: false)
+        defer { second.terminate() }
+        XCTAssertTrue(UITestApp.waitForSettings(in: second))
+        XCTAssertTrue(UITestApp.selectSettingsTab(named: "Menu bar", in: second))
+        let persisted = second.popUpButtons["settings.menubar.provider"]
+        XCTAssertTrue(persisted.waitForExistence(timeout: 10))
+        XCTAssertEqual(persisted.value as? String, "OpenAI")
+    }
+
+    @MainActor
     func testDiagnosticsTabShowsCountersAndVersion() {
         let app = UITestApp.launch(arguments: ["-openSettings"])
         defer { app.terminate() }
@@ -60,12 +93,14 @@ final class SettingsUITests: XCTestCase {
         XCTAssertTrue(UITestApp.selectSettingsTab(named: "Diagnostics", in: app))
         let table = app.outlines["settings.diagnostics.table"]
         XCTAssertTrue(table.waitForExistence(timeout: 10))
-        XCTAssertEqual(table.outlineRows.count, 3)
+        XCTAssertEqual(table.outlineRows.count, UITestApp.allProviders.count)
 
         let claudeCell = table.staticTexts.matching(NSPredicate(format: "value == 'Claude' OR label == 'Claude'"))
         XCTAssertTrue(claudeCell.firstMatch.waitForExistence(timeout: 5))
         let versionPredicate = NSPredicate(format: "value BEGINSWITH 'App ' OR label BEGINSWITH 'App '")
         XCTAssertTrue(app.staticTexts.matching(versionPredicate).firstMatch.exists)
+        XCTAssertTrue(app.buttons["settings.diagnostics.copy"].exists)
+        XCTAssertTrue(app.buttons["settings.diagnostics.about"].exists)
     }
 
     /// Skipped: the initially selected tab's form content is not exposed to accessibility until a

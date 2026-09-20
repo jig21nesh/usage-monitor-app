@@ -16,6 +16,7 @@ struct LaunchOptions: Equatable {
     var openSettings = false
     var openOnboarding = false
     var openPanelPreview = false
+    var openAbout = false
 
     static func parse(
         arguments: [String] = CommandLine.arguments,
@@ -30,6 +31,7 @@ struct LaunchOptions: Equatable {
         options.openSettings = arguments.contains("-openSettings")
         options.openOnboarding = arguments.contains("-openOnboarding")
         options.openPanelPreview = arguments.contains("-openPanelPreview")
+        options.openAbout = arguments.contains("-openAbout")
         #endif
         return options
     }

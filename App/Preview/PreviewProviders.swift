@@ -16,6 +16,11 @@ enum PreviewComposition {
         if defaults.data(forKey: UserDefaultsSettingsStore.key) == nil {
             var settings = AppSettings.default
             settings.hasCompletedOnboarding = !options.firstLaunch
+            // A first launch starts from the shipping defaults so onboarding's detection is exercised;
+            // every other test launch starts with the linked providers already visible.
+            if !options.firstLaunch, options.scenario != .notLinked {
+                settings.enabledProviders = PreviewProviders.linkedProviders
+            }
             store.save(settings)
         }
         return UsageMonitorModel(
@@ -64,6 +69,10 @@ nonisolated struct PreviewProvider: UsageProvider {
         self.results = results
     }
 
+    static func notLinked(_ id: ProviderID) -> PreviewProvider {
+        PreviewProvider(id: id, link: .notLinked(.credentialsNotFound), results: [.failure(.credentialsNotFound)])
+    }
+
     func linkState() async -> LinkState { link }
 
     func fetchUsage() async throws(ProviderError) -> UsageSnapshot {
@@ -74,20 +83,18 @@ nonisolated struct PreviewProvider: UsageProvider {
 }
 
 enum PreviewProviders {
+    /// Providers that report a login in the `linked` and `stale` scenarios.
+    static let linkedProviders: Set<ProviderID> = [.claude, .openAI, .grok, .copilot, .muse]
+
     static func providers(for scenario: LaunchOptions.Scenario) -> [any UsageProvider] {
+        if scenario == .notLinked {
+            return ProviderID.allCases.map(PreviewProvider.notLinked)
+        }
         let now = Date()
         let claude = claudeSnapshot(now: now)
-        let openAI = openAISnapshot(now: now)
-        let grok = grokSnapshot(now: now)
         let claudeProvider: PreviewProvider = switch scenario {
-        case .linked:
+        case .linked, .notLinked:
             PreviewProvider(id: .claude, link: linked(claude), results: [.success(claude)])
-        case .notLinked:
-            PreviewProvider(
-                id: .claude,
-                link: .notLinked(.credentialsNotFound),
-                results: [.failure(.credentialsNotFound)]
-            )
         case .stale:
             PreviewProvider(id: .claude, link: linked(claude), results: [
                 .success(claude), .failure(.serverError(status: 503)),
@@ -95,9 +102,17 @@ enum PreviewProviders {
         }
         return [
             claudeProvider,
-            PreviewProvider(id: .openAI, link: linked(openAI), results: [.success(openAI)]),
-            PreviewProvider(id: .grok, link: linked(grok), results: [.success(grok)]),
+            linkedProvider(openAISnapshot(now: now)),
+            linkedProvider(grokSnapshot(now: now)),
+            linkedProvider(copilotSnapshot(now: now)),
+            PreviewProvider.notLinked(.cursor),
+            linkedProvider(museSnapshot(now: now)),
+            PreviewProvider.notLinked(.opencodeGo),
         ]
+    }
+
+    private static func linkedProvider(_ snapshot: UsageSnapshot) -> PreviewProvider {
+        PreviewProvider(id: snapshot.provider, link: linked(snapshot), results: [.success(snapshot)])
     }
 
     private static func linked(_ snapshot: UsageSnapshot) -> LinkState {
@@ -129,6 +144,22 @@ enum PreviewProviders {
         UsageSnapshot(provider: .grok, planName: "SuperGrok", windows: [
             UsageWindow(id: "grok.weekly", title: "Weekly usage", kind: .weekly, usedPercent: 4,
                         resetsAt: now.addingTimeInterval(5 * 24 * 3600), windowDuration: 604_800),
+        ], fetchedAt: now)
+    }
+
+    static func copilotSnapshot(now: Date) -> UsageSnapshot {
+        UsageSnapshot(provider: .copilot, planName: "Copilot Pro", windows: [
+            UsageWindow(id: "copilot.monthly", title: "Premium requests", kind: .monthly, usedPercent: 40,
+                        resetsAt: now.addingTimeInterval(12 * 24 * 3600), windowDuration: 30 * 86_400),
+        ], fetchedAt: now)
+    }
+
+    static func museSnapshot(now: Date) -> UsageSnapshot {
+        UsageSnapshot(provider: .muse, planName: "High Usage", windows: [
+            UsageWindow(id: "muse.session", title: "Current session", kind: .session, usedPercent: 12,
+                        resetsAt: now.addingTimeInterval(3 * 3600 + 5 * 60), windowDuration: 18_000),
+            UsageWindow(id: "muse.weekly", title: "Weekly usage", kind: .weekly, usedPercent: 30,
+                        resetsAt: now.addingTimeInterval(4 * 24 * 3600), windowDuration: 604_800),
         ], fetchedAt: now)
     }
 }
