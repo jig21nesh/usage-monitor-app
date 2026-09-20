@@ -16,7 +16,11 @@ struct DiagnosticsSettingsTab: View {
     /// One row per registered provider, so test builds with three providers show three rows.
     private var rows: [Row] {
         model.statuses.map { status in
-            Row(id: status.provider, diagnostics: model.diagnostics[status.provider] ?? ProviderDiagnostics(), status: status)
+            Row(
+                id: status.provider,
+                diagnostics: model.diagnostics[status.provider] ?? ProviderDiagnostics(),
+                status: status
+            )
         }
     }
 
