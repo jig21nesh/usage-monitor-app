@@ -1,0 +1,16 @@
+{
+  "login": "legacy-user",
+  "access_type_sku": "copilot_business_seat",
+  "quota_reset_date": "2026-10-01",
+  "quota_snapshots": {
+    "premium_interactions": {
+      "unlimited": false,
+      "quota_reset_at": 0,
+      "remaining": 75,
+      "entitlement": 300
+    },
+    "chat": {
+      "unlimited": true
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "login": "enterprise-user",
+  "copilot_plan": "enterprise",
+  "quota_reset_date_utc": "2026-10-01T00:00:00.000Z",
+  "quota_snapshots": {
+    "chat": { "unlimited": true, "percent_remaining": 100.0 },
+    "completions": { "unlimited": true, "percent_remaining": 100.0 },
+    "premium_interactions": { "unlimited": true, "percent_remaining": 100.0 }
+  }
+}
