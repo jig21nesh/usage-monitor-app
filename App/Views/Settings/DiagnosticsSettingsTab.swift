@@ -49,8 +49,7 @@ struct DiagnosticsSettingsTab: View {
             .accessibilityIdentifier("settings.diagnostics.footer")
             HStack {
                 Button("About…") {
-                    AppActivation.bringToFront()
-                    openWindow(id: WindowID.about)
+                    AppActivation.open(WindowID.about, using: openWindow)
                 }
                 .accessibilityIdentifier("settings.diagnostics.about")
                 Spacer()

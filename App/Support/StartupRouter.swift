@@ -53,6 +53,8 @@ enum StartupRouter {
             try? await Task.sleep(for: .milliseconds(400))
             if options.isUITesting {
                 moveWindowsToPrimaryScreen()
+            } else {
+                AppActivation.followActiveSpace()
             }
             let titles = NSApp.windows.filter(\.isVisible).map(\.title).joined(separator: "|")
             UsageLog.polling.notice("startup attempt=\(attempt, privacy: .public) windows=\(titles, privacy: .public)")

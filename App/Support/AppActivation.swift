@@ -1,4 +1,5 @@
 import AppKit
+import SwiftUI
 
 enum WindowID {
     static let onboarding = "onboarding"
@@ -15,6 +16,28 @@ enum AppActivation {
             NSApp.setActivationPolicy(.regular)
         }
         NSApp.activate()
+    }
+
+    /// SwiftUI opens windows on the Space and display that hold the pointer, which on a
+    /// multi-display Mac can be a Space the user is not looking at. Tagging the window with
+    /// `moveToActiveSpace` makes it follow the user instead. Ordering is left alone: reordering
+    /// windows here steals focus from whichever one the user or a UI test just opened.
+    static func followActiveSpace() {
+        let regular = NSApp.windows.filter { $0.styleMask.contains(.titled) && $0.level == .normal }
+        for window in regular {
+            window.collectionBehavior.insert(.moveToActiveSpace)
+        }
+    }
+
+    /// Opens a SwiftUI window scene, brings the app forward and lets the window follow the
+    /// user's current Space.
+    static func open(_ id: String, using openWindow: OpenWindowAction) {
+        bringToFront()
+        openWindow(id: id)
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            followActiveSpace()
+        }
     }
 
     static func returnToAccessoryIfNoWindows(excluding closing: NSWindow? = nil) {
