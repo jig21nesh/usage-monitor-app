@@ -54,7 +54,7 @@ targets:
         LSUIElement: true
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         LSApplicationCategoryType: public.app-category.utilities
-        NSHumanReadableCopyright: "Copyright © 2026 Jignesh Kakkad. MIT License."
+        NSHumanReadableCopyright: "Copyright © 2026 Curious Pi Labs. MIT License."
         NSPrincipalClass: NSApplication
     entitlements:
       path: App/UsageMonitor.entitlements

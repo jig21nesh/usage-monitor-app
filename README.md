@@ -528,8 +528,8 @@ macOS, Xcode and tool versions plus a redacted Diagnostics report.
 
 ## License and trademarks
 
-AI Usage Monitor is released under the [MIT License](LICENSE). Copyright (c) 2026 Jignesh
-Kakkad.
+AI Usage Monitor is released under the [MIT License](LICENSE). Copyright (c) 2026 Curious Pi
+Labs.
 
 In short: you may use, copy, modify, merge, publish, distribute, sublicense and sell copies of
 the software, provided the copyright and permission notice stay with it. The software is
