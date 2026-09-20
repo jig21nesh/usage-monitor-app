@@ -19,6 +19,18 @@ public enum ProviderRegistry {
             GrokUsageProvider.live(
                 environment: environment, http: http, keychain: keychain, fileSystem: fileSystem, now: now
             ),
+            CopilotUsageProvider.live(
+                environment: environment, http: http, keychain: keychain, fileSystem: fileSystem, now: now
+            ),
+            CursorUsageProvider.live(
+                environment: environment, http: http, keychain: keychain, fileSystem: fileSystem, now: now
+            ),
+            MuseUsageProvider.live(
+                environment: environment, http: http, keychain: keychain, fileSystem: fileSystem, now: now
+            ),
+            OpenCodeGoUsageProvider.live(
+                environment: environment, http: http, keychain: keychain, fileSystem: fileSystem, now: now
+            ),
         ]
     }
 }

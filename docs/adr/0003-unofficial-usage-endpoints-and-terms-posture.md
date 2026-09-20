@@ -43,3 +43,18 @@ an active Claude Code session.
   429 ever appears.
 - The maintainers accept the terms-of-service grey area on behalf of the project but not on
   behalf of users; users opt in per provider.
+
+## Amendment 2026-09-20: POST reads, key-minting endpoints and poll floors
+
+Four more providers (GitHub Copilot, Cursor, Muse Code, OpenCode Go; ADR 0008) required three
+clarifications:
+
+- **POST is acceptable for idempotent, read-only RPCs.** Cursor's dashboard RPC and Muse Code's
+  key endpoint only accept POST with an empty body. The rule is "one read-only request", not
+  "one GET": the app never sends user data and never causes a state change the user would notice.
+- **Endpoints that return a credential must discard it.** Muse Code's endpoint returns the
+  account's API key alongside usage. The mapper decodes only the usage fields; the key never
+  leaves the decoding function, is never logged and never persisted.
+- **Providers may declare a poll floor.** `UsageProvider.minimumPollInterval` lets an adapter cap
+  its own cadence regardless of the user's refresh interval or a forced refresh. Muse Code uses
+  15 minutes because nobody has verified that its endpoint tolerates frequent polling.

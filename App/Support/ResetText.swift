@@ -35,6 +35,10 @@ extension ProviderID {
         case .claude: "sparkles"
         case .openAI: "brain.head.profile"
         case .grok: "bolt"
+        case .copilot: "chevron.left.forwardslash.chevron.right"
+        case .cursor: "cursorarrow.rays"
+        case .muse: "wand.and.stars"
+        case .opencodeGo: "terminal"
         }
     }
 }

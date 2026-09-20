@@ -15,11 +15,12 @@ struct ProviderRegistryTests {
     }
 
     @Test func liveRegistryListsEveryProviderInDisplayOrder() {
-        #expect(makeProviders().map(\.id) == [.claude, .openAI, .grok])
+        #expect(makeProviders().map(\.id) == [.claude, .openAI, .grok, .copilot, .cursor, .muse, .opencodeGo])
     }
 
     @Test func providersWithoutAnyCredentialStoreReportNotLinked() async {
         for provider in makeProviders() {
+            #expect(provider.minimumPollInterval == nil || provider.id == .muse)
             #expect(await provider.linkState() == .notLinked(.credentialsNotFound))
             await #expect(throws: ProviderError.credentialsNotFound) {
                 try await provider.fetchUsage()
