@@ -1,0 +1,13 @@
+{
+  "billingCycleEnd": "2026-10-16T00:00:00Z",
+  "planUsage": {
+    "totalSpend": 120,
+    "includedSpend": 120,
+    "limit": 0
+  },
+  "spendLimitUsage": {
+    "individualLimit": 0,
+    "pooledLimit": 0,
+    "limitType": "none"
+  }
+}
