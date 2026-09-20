@@ -51,6 +51,10 @@ body:
         - Claude
         - OpenAI
         - Grok
+        - GitHub Copilot
+        - Cursor
+        - Muse Code
+        - OpenCode Go
         - None / app-wide
     validations:
       required: true
@@ -58,7 +62,7 @@ body:
     id: cli-versions
     attributes:
       label: Vendor CLI versions
-      description: Output of `claude --version`, `codex --version`, `grok --version` as applicable.
+      description: Output of `claude --version`, `codex --version`, `grok --version`, `gh --version`, `cursor-agent --version`, `muse --version`, `opencode --version` as applicable.
       render: text
   - type: textarea
     id: diagnostics
