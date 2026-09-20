@@ -13,7 +13,10 @@ struct SettingsStoreTests {
 
     @Test func defaultsEnableEveryProviderEveryTwoMinutes() {
         let settings = AppSettings.default
-        #expect(settings.enabledProviders == Set(ProviderID.allCases))
+        #expect(settings.enabledProviders == Set(ProviderID.defaultEnabled))
+        #expect(settings.menuBarProvider == nil)
+        #expect(settings.menuBarThresholds == .default)
+        #expect(settings.colorsMenuBarIcon)
         #expect(settings.refreshInterval == .twoMinutes)
         #expect(!settings.launchAtLogin)
         #expect(!settings.hasCompletedOnboarding)
@@ -46,13 +49,43 @@ struct SettingsStoreTests {
         #expect(UserDefaultsSettingsStore(defaults: defaults).load() == .default)
     }
 
-    @Test func unknownProviderFallsBackToDefaults() {
+    @Test func unknownProviderIsDroppedNotFatal() {
         let (defaults, name) = makeDefaults()
         defer { defaults.removePersistentDomain(forName: name) }
         let json = #"{"enabledProviders":["claude","gemini"],"refreshInterval":120,"#
             + #""launchAtLogin":false,"hasCompletedOnboarding":true}"#
         defaults.set(Data(json.utf8), forKey: UserDefaultsSettingsStore.key)
-        #expect(UserDefaultsSettingsStore(defaults: defaults).load() == .default)
+        let loaded = UserDefaultsSettingsStore(defaults: defaults).load()
+        #expect(loaded.enabledProviders == [.claude])
+        #expect(loaded.hasCompletedOnboarding)
+        #expect(loaded.menuBarThresholds == .default)
+    }
+
+    @Test func menuBarKeysRoundTripAndDefaultWhenAbsent() throws {
+        var settings = AppSettings.default
+        settings.menuBarProvider = .openAI
+        settings.menuBarThresholds = MenuBarThresholds(warningPercent: 50, criticalPercent: 75)
+        settings.colorsMenuBarIcon = false
+        let decoded = try JSONDecoder().decode(AppSettings.self, from: JSONEncoder().encode(settings))
+        #expect(decoded == settings)
+
+        let legacy = #"{"enabledProviders":["grok"],"refreshInterval":300,"launchAtLogin":true,"#
+            + #""hasCompletedOnboarding":true,"percentStyle":"remaining"}"#
+        let old = try JSONDecoder().decode(AppSettings.self, from: Data(legacy.utf8))
+        #expect(old.menuBarProvider == nil)
+        #expect(old.menuBarThresholds == .default)
+        #expect(old.colorsMenuBarIcon)
+        #expect(old.percentStyle == .remaining)
+    }
+
+    @Test func thresholdsAreClampedAndOrdered() {
+        let swapped = MenuBarThresholds(warningPercent: 90, criticalPercent: 40)
+        #expect(swapped.warningPercent == 40)
+        #expect(swapped.criticalPercent == 90)
+        let wild = MenuBarThresholds(warningPercent: -5, criticalPercent: 250)
+        #expect(wild.warningPercent == 0)
+        #expect(wild.criticalPercent == 100)
+        #expect(MenuBarThresholds(warningPercent: .nan, criticalPercent: 80).warningPercent == 0)
     }
 
     @Test(arguments: RefreshInterval.allCases)

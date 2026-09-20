@@ -31,6 +31,7 @@ public final class UsageMonitorModel {
     private let wakeSource: (any SystemWakeSource)?
     private let wakeRefreshThreshold: Duration
     private var consecutiveFailures: [ProviderID: Int] = [:]
+    private var lastAttemptAt: [ProviderID: Date] = [:]
     private var lastWakeRefreshAt: Date?
     private(set) var loopTask: Task<Void, Never>?
     private(set) var wakeTask: Task<Void, Never>?
@@ -178,8 +179,12 @@ public final class UsageMonitorModel {
                 && !status.isRefreshing
                 && (subset?.contains(status.provider) ?? true)
                 && (force || status.nextRetryAt.map { $0 <= current } ?? true)
+                && isPastMinimumInterval(status.provider, now: current)
         }.map(\.provider)
         guard !due.isEmpty else { return }
+        for id in due {
+            lastAttemptAt[id] = current
+        }
 
         isRefreshing = true
         defer { isRefreshing = false }
@@ -280,6 +285,17 @@ public final class UsageMonitorModel {
         let identifier = error.logIdentifier
         // swiftlint:disable:next line_length
         UsageLog.polling.error("poll failed provider=\(id.rawValue, privacy: .public) error=\(identifier, privacy: .public) retry_in_s=\(retrySeconds, privacy: .public)")
+    }
+
+    /// Some endpoints (Muse's key endpoint) must not be hit on every tick (ADR 0003).
+    private func isPastMinimumInterval(_ id: ProviderID, now: Date) -> Bool {
+        guard let minimum = providers[id]?.minimumPollInterval, let last = lastAttemptAt[id] else { return true }
+        return now.timeIntervalSince(last) >= minimum.timeInterval
+    }
+
+    /// What the menu bar icon should show right now (ADR 0008).
+    public var menuBarStatus: MenuBarStatus {
+        MenuBarStatusResolver.resolve(statuses: statuses, settings: settings)
     }
 
     private func update(_ id: ProviderID, _ mutate: (inout ProviderStatus) -> Void) {

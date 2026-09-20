@@ -8,7 +8,12 @@ struct ProviderIDTests {
         #expect(ProviderID.claude.rawValue == "claude")
         #expect(ProviderID.openAI.rawValue == "openai")
         #expect(ProviderID.grok.rawValue == "grok")
-        #expect(ProviderID.allCases == [.claude, .openAI, .grok])
+        #expect(ProviderID.copilot.rawValue == "copilot")
+        #expect(ProviderID.cursor.rawValue == "cursor")
+        #expect(ProviderID.muse.rawValue == "muse")
+        #expect(ProviderID.opencodeGo.rawValue == "opencode-go")
+        #expect(ProviderID.allCases == [.claude, .openAI, .grok, .copilot, .cursor, .muse, .opencodeGo])
+        #expect(ProviderID.defaultEnabled == [.claude, .openAI, .grok])
     }
 
     @Test(arguments: ProviderID.allCases)
@@ -19,8 +24,8 @@ struct ProviderIDTests {
         #expect(id.id == id.rawValue)
     }
 
-    @Test func onlyGrokIsExperimental() {
-        #expect(ProviderID.allCases.filter(\.isExperimental) == [.grok])
+    @Test func newestEndpointsAreExperimental() {
+        #expect(ProviderID.allCases.filter(\.isExperimental) == [.grok, .cursor, .muse])
     }
 }
 

@@ -29,6 +29,10 @@ settings:
     MARKETING_VERSION: 0.1.0
     ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+  configs:
+    Release:
+      # Notarisation rejects binaries carrying get-task-allow; Xcode injects it unless told not to.
+      CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO
 packages:
   UsageMonitorCore:
     path: Packages/UsageMonitorCore
@@ -60,6 +64,11 @@ targets:
         com.apple.security.temporary-exception.files.home-relative-path.read-only:
           - /.codex/auth.json
           - /.grok/auth.json
+          - /.config/gh/hosts.yml
+          - /.copilot/config.json
+          - /.config/muse/auth.json
+          - /.local/share/opencode/auth.json
+          - /Library/Application Support/Cursor/User/globalStorage/
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.curiouspilabs.UsageMonitor
