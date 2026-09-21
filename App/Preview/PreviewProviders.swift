@@ -5,7 +5,7 @@ import UsageMonitorCore
 
 /// Deterministic providers for UI tests and previews. Numbers mirror the product screenshots.
 enum PreviewComposition {
-    static let defaultsSuite = "com.curiouspilabs.UsageMonitor.uitests"
+    static let defaultsSuite = "com.jiggykakkad.UsageMonitor.uitests"
 
     static func makeModel(options: LaunchOptions) -> UsageMonitorModel {
         let defaults = UserDefaults(suiteName: defaultsSuite) ?? .standard

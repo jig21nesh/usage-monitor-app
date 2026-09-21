@@ -56,7 +56,7 @@ struct FileSystemTests {
 struct KeychainReaderTests {
     @Test func missingItemReturnsNilWithoutInteraction() throws {
         let reader = SecurityFrameworkKeychainReader(allowsUserInteraction: false)
-        let service = "com.curiouspilabs.UsageMonitor.tests.\(UUID().uuidString)"
+        let service = "com.jiggykakkad.UsageMonitor.tests.\(UUID().uuidString)"
         #expect(try reader.genericPassword(service: service, account: nil) == nil)
         #expect(try reader.genericPassword(service: service, account: "nobody") == nil)
     }
@@ -64,7 +64,7 @@ struct KeychainReaderTests {
     @Test func missingItemReturnsNilWhenInteractionAllowed() throws {
         let reader = SecurityFrameworkKeychainReader()
         #expect(reader.allowsUserInteraction)
-        let service = "com.curiouspilabs.UsageMonitor.tests.\(UUID().uuidString)"
+        let service = "com.jiggykakkad.UsageMonitor.tests.\(UUID().uuidString)"
         #expect(try reader.genericPassword(service: service, account: nil) == nil)
     }
 }
