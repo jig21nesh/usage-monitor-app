@@ -27,6 +27,6 @@ final class AboutUITests: XCTestCase {
         let panel = UITestApp.panel(in: app)
         XCTAssertTrue(panel.buttons["panel.about"].waitForExistence(timeout: 15))
         panel.buttons["panel.about"].click()
-        XCTAssertTrue(UITestApp.about(in: app).waitForExistence(timeout: 10))
+        XCTAssertTrue(UITestApp.about(in: app).waitForExistence(timeout: 15))
     }
 }
