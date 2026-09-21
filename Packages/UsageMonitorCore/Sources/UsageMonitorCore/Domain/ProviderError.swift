@@ -17,6 +17,9 @@ public enum ProviderError: Error, Sendable, Hashable {
     case decoding(String)
     case cancelled
 
+    /// Reason carried by `credentialsUnreadable` when the home folder grant is missing (ADR 0009).
+    public static let homeFolderNotGranted = "home_folder_not_granted"
+
     /// True when the fix is on the user's side: log in to the vendor CLI again and re-link.
     public var requiresRelink: Bool {
         switch self {
@@ -54,6 +57,8 @@ public enum ProviderError: Error, Sendable, Hashable {
     public var userMessage: String {
         switch self {
         case .credentialsNotFound: "No login found. Sign in with the vendor CLI, then link."
+        case .credentialsUnreadable(Self.homeFolderNotGranted):
+            "Grant access to your home folder in the Welcome window or Settings > Accounts."
         case .credentialsUnreadable: "The stored login could not be read."
         case .credentialsMalformed: "The stored login has an unexpected format."
         case .credentialsExpired: "The stored login has expired. Sign in with the CLI again."
