@@ -7,7 +7,7 @@ public protocol SettingsStore: Sendable {
 
 /// `UserDefaults` is documented as thread-safe, hence the unchecked conformance.
 public final class UserDefaultsSettingsStore: SettingsStore, @unchecked Sendable {
-    public static let key = "com.curiouspilabs.UsageMonitor.settings"
+    public static let key = "com.jiggykakkad.UsageMonitor.settings"
 
     private let defaults: UserDefaults
 
