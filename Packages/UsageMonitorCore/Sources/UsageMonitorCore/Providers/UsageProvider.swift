@@ -14,8 +14,14 @@ public protocol UsageProvider: Sendable {
     /// A floor on how often this provider may be polled, regardless of the user's refresh
     /// interval or a forced refresh. Nil means no floor (ADR 0003).
     var minimumPollInterval: Duration? { get }
+
+    /// Drops any credential held in memory so the next call re-reads the vendor's store: after
+    /// a 401, an expiry, or when the user asks to re-link (ADR 0002 amendment 2026-09-21).
+    func forgetCredentials()
 }
 
 extension UsageProvider {
     public var minimumPollInterval: Duration? { nil }
+
+    public func forgetCredentials() {}
 }

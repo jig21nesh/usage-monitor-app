@@ -26,10 +26,19 @@ public struct ClaudeUsageProvider: UsageProvider {
         now: @escaping @Sendable () -> Date
     ) -> ClaudeUsageProvider {
         ClaudeUsageProvider(
-            credentials: ClaudeCodeCredentialSource(keychain: keychain, environment: environment, now: now),
+            credentials: CachedCredentialSource(
+                ClaudeCodeCredentialSource(keychain: keychain, environment: environment, now: now),
+                label: ProviderID.claude.rawValue,
+                expiry: { $0.expiresAt },
+                now: now
+            ),
             client: ClaudeUsageClient(http: http),
             now: now
         )
+    }
+
+    public func forgetCredentials() {
+        credentials.forget()
     }
 
     public func linkState() async -> LinkState {

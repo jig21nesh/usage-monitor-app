@@ -26,10 +26,19 @@ public struct OpenCodeGoUsageProvider: UsageProvider {
         now: @escaping @Sendable () -> Date
     ) -> OpenCodeGoUsageProvider {
         OpenCodeGoUsageProvider(
-            credentials: OpenCodeCredentialSource(fileSystem: fileSystem, environment: environment),
+            credentials: CachedCredentialSource(
+                OpenCodeCredentialSource(fileSystem: fileSystem, environment: environment),
+                label: ProviderID.opencodeGo.rawValue,
+                expiry: { _ in nil },
+                now: now
+            ),
             client: OpenCodeGoUsageClient(http: http),
             now: now
         )
+    }
+
+    public func forgetCredentials() {
+        credentials.forget()
     }
 
     public func linkState() async -> LinkState {

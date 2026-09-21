@@ -144,7 +144,9 @@ The generated Xcode project and your local signing config are gitignored on purp
    <img src="docs/images/onboarding.png" width="480"
         alt="Welcome window listing the seven providers with their detected logins">
 2. For Claude, macOS may ask whether the app can read the "Claude Code-credentials" item in your
-   keychain; choose **Always Allow** so the question is not repeated on every refresh.
+   keychain. Choose **Always Allow**. With **Allow** the app asks again at most once per launch,
+   because it reads the item once and keeps it in memory until it expires; an unsigned (ad-hoc)
+   build asks again after every rebuild, see [Troubleshooting](#troubleshooting).
 3. Tick **Launch at login** if you want the monitor to start with your Mac, then click **Done**.
    The app keeps running in the menu bar.
 4. Click the menu bar icon to open the usage panel. **Refresh now** forces an immediate update.
@@ -220,9 +222,10 @@ Behaviour worth knowing:
 
 ## How it works
 
-Each provider is an isolated adapter that reads the vendor tool's stored login at poll time,
-makes one read-only HTTPS request, and maps the JSON to a snapshot. Tokens are held in memory
-for the duration of that request and discarded. Every request carries
+Each provider is an isolated adapter that reads the vendor tool's stored login on first use and
+again only when it expires, is rejected, or you press **Re-link**, makes one read-only HTTPS
+request per refresh, and maps the JSON to a snapshot. Tokens are held in process memory only and
+are never written anywhere (ADR 0002). Every request carries
 `User-Agent: AIUsageMonitor/<version> (macOS)` and `Accept: application/json` unless the vendor
 requires its own user agent; the tables below list the other headers.
 
@@ -452,7 +455,7 @@ time. The maintainers accept that risk for the project, not on your behalf. See
 | OpenCode Go stays not linked | `~/.local/share/opencode/auth.json` has no `opencode-go` entry | Buy or sign in to the Go plan with `opencode auth login`; Zen pay-as-you-go has no windows to show |
 | Menu bar icon is grey | The tracked provider is unknown, not linked, or its numbers are stale | Open the panel; a **stale** badge or the Diagnostics tab shows the last error. Pick another provider under Settings > Menu bar |
 | Menu bar icon is missing | Your menu bar is full and macOS moved the item into the overflow chevron (») | Click the chevron, or hide another menu bar item. The app is still running |
-| macOS keeps asking for keychain access | **Allow** was chosen instead of **Always Allow** | Choose **Always Allow** next time, or remove and re-add the app's entry in Keychain Access |
+| macOS keeps asking for keychain access | **Allow** was chosen instead of **Always Allow**, or the app is an ad-hoc build: every rebuild has a new code identity, which resets **Always Allow** | Choose **Always Allow** next time. For builds you make yourself, sign with your Apple Development identity so the identity stays the same between builds: `SIGNING_IDENTITY="Apple Development: Your Name (TEAMID)" scripts/build-dmg.sh --no-notarize` (see `docs/RELEASING.md`) |
 | Settings window does not appear | Background apps have no Dock icon to activate | Click the menu bar icon and choose **Settings…** again; the app activates itself first |
 | Numbers look frozen | The provider is in backoff, stale, or (Muse Code) inside its 15-minute poll floor | Open the panel: a **stale** badge or the Diagnostics tab shows the last error and the next retry |
 

@@ -26,16 +26,25 @@ public struct CursorUsageProvider: UsageProvider {
         now: @escaping @Sendable () -> Date
     ) -> CursorUsageProvider {
         CursorUsageProvider(
-            credentials: CursorCredentialSource(
-                environment: environment,
-                database: SystemSQLiteKeyValueReader(),
-                keychain: keychain,
-                fileSystem: fileSystem,
+            credentials: CachedCredentialSource(
+                CursorCredentialSource(
+                    environment: environment,
+                    database: SystemSQLiteKeyValueReader(),
+                    keychain: keychain,
+                    fileSystem: fileSystem,
+                    now: now
+                ),
+                label: ProviderID.cursor.rawValue,
+                expiry: { $0.expiresAt },
                 now: now
             ),
             client: CursorUsageClient(http: http),
             now: now
         )
+    }
+
+    public func forgetCredentials() {
+        credentials.forget()
     }
 
     public func linkState() async -> LinkState {

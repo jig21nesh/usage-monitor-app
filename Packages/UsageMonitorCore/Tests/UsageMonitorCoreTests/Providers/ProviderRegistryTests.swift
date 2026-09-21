@@ -27,4 +27,13 @@ struct ProviderRegistryTests {
             }
         }
     }
+
+    @Test func forgettingCredentialsBeforeAnyLoadIsHarmless() async {
+        for provider in makeProviders() {
+            provider.forgetCredentials()
+            #expect(await provider.linkState() == .notLinked(.credentialsNotFound))
+            provider.forgetCredentials()
+            #expect(await provider.linkState() == .notLinked(.credentialsNotFound))
+        }
+    }
 }

@@ -26,10 +26,19 @@ public struct OpenAIUsageProvider: UsageProvider {
         now: @escaping @Sendable () -> Date
     ) -> OpenAIUsageProvider {
         OpenAIUsageProvider(
-            credentials: CodexAuthFileCredentialSource(environment: environment, fileSystem: fileSystem),
+            credentials: CachedCredentialSource(
+                CodexAuthFileCredentialSource(environment: environment, fileSystem: fileSystem),
+                label: ProviderID.openAI.rawValue,
+                expiry: { _ in nil },
+                now: now
+            ),
             client: OpenAIUsageClient(http: http),
             now: now
         )
+    }
+
+    public func forgetCredentials() {
+        credentials.forget()
     }
 
     public func linkState() async -> LinkState {
