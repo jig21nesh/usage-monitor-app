@@ -46,8 +46,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (thresholds default 60% and 80%), grey when unknown or stale, with a monochrome option; new
   Settings > Menu bar tab for the tracked provider and thresholds (#14, #19).
 - Distribution: `scripts/build-dmg.sh` builds a DMG (Developer ID signed and notarised when
-  credentials exist, ad-hoc otherwise) and a tag-triggered release workflow publishes it; see
-  `docs/RELEASING.md` (#15).
+  credentials exist, ad-hoc otherwise) and `scripts/release.sh` builds, signs, notarises and
+  publishes it from the maintainer's Mac as a GitHub Release; see `docs/RELEASING.md` (#15).
 - Repository hygiene: README, pinned CI actions, UI-test and markdown-lint jobs, Dependabot for
   GitHub Actions, issue and pull request templates, CODEOWNERS (#5).
 

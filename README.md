@@ -11,8 +11,8 @@ A macOS menu bar extra that shows how much of your AI subscription limits you ha
 your plan name, refreshed in the background every few minutes. The menu bar icon turns green,
 orange or red as the limit you care about fills up.
 
-**Status:** first release in progress. Downloads are unsigned until the project has an Apple
-Developer ID; see [Installation](#installation).
+**Status:** first release in progress. Release DMGs are signed with a Developer ID and
+notarised by Apple; see [Installation](#installation).
 
 [![CI](https://github.com/jig21nesh/usage-monitor-app/actions/workflows/ci.yml/badge.svg)](https://github.com/jig21nesh/usage-monitor-app/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -100,8 +100,16 @@ Developer ID; see [Installation](#installation).
 2. Open the DMG and drag **AI Usage Monitor** onto the **Applications** shortcut.
 3. Eject the DMG and launch the app from Applications.
 
-**Builds are currently unsigned** (the file name ends in `-unsigned.dmg`). Until the project has
-an Apple Developer ID, macOS refuses to open the app the first time. To allow it once:
+Release DMGs are signed with a Developer ID and notarised by Apple, so macOS opens the app
+without a warning. Optional: verify the download against the checksum published with the
+release:
+
+```sh
+shasum -a 256 -c AIUsageMonitor-<version>.dmg.sha256
+```
+
+**Unsigned builds** (a DMG you built yourself, or an older file whose name ends in
+`-unsigned.dmg`) are refused by macOS the first time. To allow one once:
 
 1. Double-click the app; macOS says it cannot verify the developer. Click **Done**.
 2. Open **System Settings > Privacy & Security**, scroll to **Security**, and click
@@ -109,15 +117,9 @@ an Apple Developer ID, macOS refuses to open the app the first time. To allow it
    hour).
 3. Confirm with your login password. The app opens and macOS remembers the decision.
 
-Optional: verify the download against the checksum published with the release:
-
-```sh
-shasum -a 256 -c AIUsageMonitor-<version>-unsigned.dmg.sha256
-```
-
-Release builds are produced by `scripts/build-dmg.sh` and the `Release` GitHub Actions
-workflow; maintainers should read [docs/RELEASING.md](docs/RELEASING.md) for signing,
-notarisation and tagging.
+Release builds are produced on the maintainer's Mac by `scripts/release.sh`, which calls
+`scripts/build-dmg.sh`; maintainers should read [docs/RELEASING.md](docs/RELEASING.md) for
+signing, notarisation and tagging.
 
 ### From source
 
@@ -397,7 +399,7 @@ Packages/UsageMonitorCore/   All logic, tested with Swift Testing
 UITests/                     XCUITest smoke suite
 docs/adr/                    Architecture Decision Records
 docs/RELEASING.md            How a DMG is built, signed, notarised and published
-scripts/                     bootstrap.sh (XcodeGen), coverage-gate.sh, build-dmg.sh, generate-app-icon.swift
+scripts/                     bootstrap.sh (XcodeGen), coverage-gate.sh, build-dmg.sh, release.sh, generate-app-icon.swift
 project.yml                  XcodeGen spec; UsageMonitor.xcodeproj is generated and gitignored
 ```
 
@@ -418,8 +420,8 @@ project.yml                  XcodeGen spec; UsageMonitor.xcodeproj is generated 
   and never keeps, logs or displays it.
 - Logs and the Diagnostics report are redacted at source: provider ids, status codes and
   durations only, never tokens, response bodies or account identifiers. Nothing leaves your Mac.
-- The release workflow imports signing material only into a temporary keychain that is deleted
-  when the job ends, and only when the secrets exist.
+- Releases are signed and notarised on the maintainer's Mac; no signing material or credential
+  is stored in the repository or on GitHub.
 - Threat model in one line: the new attack surface is read-only access to credential stores you
   already trust those tools with, plus one outbound HTTPS call per provider per refresh.
 
@@ -508,13 +510,15 @@ swift scripts/generate-app-icon.swift App/Assets.xcassets/AppIcon.appiconset
 
 ### Releases
 
-`scripts/build-dmg.sh` builds a DMG locally, and pushing a `v*` tag runs the Release workflow.
-Both sign and notarise when a Developer ID and notary credentials exist and otherwise produce a
-clearly labelled unsigned DMG. See [docs/RELEASING.md](docs/RELEASING.md).
+Releases are built, signed, notarised and published from the maintainer's Mac:
+`scripts/release.sh` checks that `main` is clean and in sync, builds the DMG with
+`scripts/build-dmg.sh`, creates the `vX.Y.Z` tag and publishes a GitHub Release whose notes are
+the matching `CHANGELOG.md` section. GitHub Actions runs tests and lint only. See
+[docs/RELEASING.md](docs/RELEASING.md).
 
 ## Roadmap
 
-- Notarised release builds once the project has a Developer ID, then a Homebrew tap.
+- A Homebrew tap, now that releases are notarised.
 - Live verification of Muse Code and OpenCode Go against real subscriptions; both ship on the
   strength of fixtures and other open-source monitors' recordings.
 - Support for Codex keyring credential storage.
