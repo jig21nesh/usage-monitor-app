@@ -44,14 +44,9 @@ struct AboutView: View {
 
     private var makerBlock: some View {
         VStack(spacing: 10) {
-            Text("Made by Curious Pi Labs")
+            Text("Made by Jiggy Kakkad")
                 .font(.headline)
                 .accessibilityIdentifier("about.maker")
-            Image("CuriousPiLabsMark")
-                .resizable()
-                .scaledToFit()
-                .frame(height: 56)
-                .accessibilityLabel("Curious Pi Labs logo")
             Text(AboutInfo.tagline)
                 .font(.callout)
                 .multilineTextAlignment(.center)
@@ -97,17 +92,16 @@ enum AboutInfo {
     static let summary = "Menu bar usage limits for Claude, OpenAI, Grok, GitHub Copilot, Cursor, "
         + "Muse Code and OpenCode Go."
 
-    static let tagline = "Curious Pi Labs builds products with curiosity, precision, and rigor. "
-        + "Every product is tested, measured, and proven before it ships."
+    static let tagline = "Principal AI Engineer in Sydney, Australia. I build AI systems for production."
 
-    static let legal = "Copyright © 2026 Curious Pi Labs. Released under the MIT License. "
+    static let legal = "Copyright © 2026 Jiggy Kakkad. Released under the MIT License. "
         + "Claude, ChatGPT, Codex, Grok, GitHub Copilot, Cursor and Muse are trademarks of their "
         + "respective owners; this project is not affiliated with or endorsed by them."
 
     static let repository = "https://github.com/jig21nesh/usage-monitor-app"
 
     static let links: [Link] = [
-        Link(id: "website", title: "Website", symbol: "globe", url: url("https://curiouspilabs.com")),
+        Link(id: "website", title: "Website", symbol: "globe", url: url("https://jiggykakkad.com")),
         Link(id: "github", title: "Source on GitHub", symbol: "chevron.left.forwardslash.chevron.right",
              url: url(repository)),
         Link(id: "issues", title: "Report an issue", symbol: "ladybug",

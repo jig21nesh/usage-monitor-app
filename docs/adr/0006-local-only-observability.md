@@ -12,7 +12,7 @@ itself be a privacy regression and would require infrastructure the project does
 
 ## Decision
 
-- **Logs:** unified logging via `os.Logger(subsystem: "com.curiouspilabs.UsageMonitor",
+- **Logs:** unified logging via `os.Logger(subsystem: "com.jiggykakkad.UsageMonitor",
   category:)` with structured key=value messages. Provider id, outcome, HTTP status and duration
   are `.public`; anything derived from a credential is never logged. Levels: debug for request
   detail, info for state transitions, error for failures.

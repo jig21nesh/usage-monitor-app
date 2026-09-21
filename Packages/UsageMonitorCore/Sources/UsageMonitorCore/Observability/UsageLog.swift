@@ -4,7 +4,7 @@ import os
 /// Unified-logging handles (ADR 0006). Interpolate credentials nowhere; mark only ids, status
 /// codes and durations as `.public`.
 public enum UsageLog {
-    public static let subsystem = "com.curiouspilabs.UsageMonitor"
+    public static let subsystem = "com.jiggykakkad.UsageMonitor"
 
     public static let polling = Logger(subsystem: subsystem, category: "polling")
     public static let providers = Logger(subsystem: subsystem, category: "providers")

@@ -1,6 +1,6 @@
 name: UsageMonitor
 options:
-  bundleIdPrefix: com.curiouspilabs
+  bundleIdPrefix: com.jiggykakkad
   deploymentTarget:
     macOS: "26.0"
   xcodeVersion: "26.6"
@@ -54,7 +54,7 @@ targets:
         LSUIElement: true
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         LSApplicationCategoryType: public.app-category.utilities
-        NSHumanReadableCopyright: "Copyright © 2026 Curious Pi Labs. MIT License."
+        NSHumanReadableCopyright: "Copyright © 2026 Jiggy Kakkad. MIT License."
         NSPrincipalClass: NSApplication
     entitlements:
       path: App/UsageMonitor.entitlements
@@ -71,7 +71,7 @@ targets:
           - /Library/Application Support/Cursor/User/globalStorage/
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.curiouspilabs.UsageMonitor
+        PRODUCT_BUNDLE_IDENTIFIER: com.jiggykakkad.UsageMonitor
         PRODUCT_NAME: UsageMonitor
   UsageMonitorUITests:
     type: bundle.ui-testing
@@ -82,7 +82,7 @@ targets:
       - target: UsageMonitor
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.curiouspilabs.UsageMonitorUITests
+        PRODUCT_BUNDLE_IDENTIFIER: com.jiggykakkad.UsageMonitorUITests
         TEST_TARGET_NAME: UsageMonitor
         GENERATE_INFOPLIST_FILE: YES
         SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated

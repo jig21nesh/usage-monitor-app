@@ -27,7 +27,7 @@ Evidence (spike run 2026-09-19 on macOS 27.0 with Xcode 26.6, sandboxed Debug bu
 directly with `USAGE_MONITOR_SPIKE=1`):
 
 ```
-home=/Users/<user>/ container=/Users/<user>/Library/Containers/com.curiouspilabs.UsageMonitor/Data
+home=/Users/<user>/ container=/Users/<user>/Library/Containers/com.jiggykakkad.UsageMonitor/Data
 file=codex ok bytes=3968
 file=grok ok bytes=1629
 keychain ok present=true bytes=524
