@@ -10,6 +10,8 @@ public final class UsageMonitorModel {
     public private(set) var diagnostics: [ProviderID: ProviderDiagnostics] = [:]
     public private(set) var isRefreshing = false
     public private(set) var lastRefreshAt: Date?
+    /// Whether file-backed providers can read the home folder under the sandbox (ADR 0009).
+    public private(set) var homeFolderState: HomeFolderGrantState
 
     public var settings: AppSettings {
         didSet {
@@ -30,6 +32,7 @@ public final class UsageMonitorModel {
     private let now: @Sendable () -> Date
     private let wakeSource: (any SystemWakeSource)?
     private let wakeRefreshThreshold: Duration
+    private let homeFolder: any HomeFolderAccess
     private var consecutiveFailures: [ProviderID: Int] = [:]
     private var lastAttemptAt: [ProviderID: Date] = [:]
     private var lastWakeRefreshAt: Date?
@@ -43,7 +46,8 @@ public final class UsageMonitorModel {
         backoff: BackoffPolicy = .standard,
         now: @escaping @Sendable () -> Date = { Date() },
         wakeSource: (any SystemWakeSource)? = nil,
-        wakeRefreshThreshold: Duration = .seconds(30)
+        wakeRefreshThreshold: Duration = .seconds(30),
+        homeFolder: any HomeFolderAccess = AlwaysGrantedHomeFolderAccess()
     ) {
         let settings = settingsStore.load()
         self.settings = settings
@@ -54,6 +58,8 @@ public final class UsageMonitorModel {
         self.now = now
         self.wakeSource = wakeSource
         self.wakeRefreshThreshold = wakeRefreshThreshold
+        self.homeFolder = homeFolder
+        self.homeFolderState = homeFolder.state()
         self.statuses = providers.map {
             ProviderStatus(provider: $0.id, isEnabled: settings.enabledProviders.contains($0.id))
         }
@@ -81,6 +87,8 @@ public final class UsageMonitorModel {
     }
 
     public func start() {
+        // Access must be live before the first poll reads a file; activate is idempotent.
+        homeFolderState = homeFolder.activate()
         if loopTask == nil {
             loopTask = Task { [weak self] in
                 await self?.runLoop()
@@ -151,6 +159,25 @@ public final class UsageMonitorModel {
         if link.isLinked {
             await poll(only: [id], force: true)
         }
+    }
+
+    /// The folder the user has to pick in the open panel: the real home directory.
+    public var homeFolderDirectory: URL { homeFolder.expectedDirectory }
+
+    /// Stores the user's folder choice, then re-probes every provider and polls once, so cards
+    /// flip from "grant access" to their real state without a relaunch.
+    public func grantHomeFolder(_ folder: URL) async throws(HomeFolderGrantError) {
+        homeFolderState = try homeFolder.grant(folder)
+        for id in statuses.map(\.provider) {
+            consecutiveFailures[id] = 0
+        }
+        await refreshLinkStates()
+        await poll(force: true)
+    }
+
+    public func revokeHomeFolder() async {
+        homeFolderState = homeFolder.revoke()
+        await refreshLinkStates()
     }
 
     /// A burst of wake notifications (lid open, display wake, network wake) must cost one poll.
