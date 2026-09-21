@@ -103,11 +103,19 @@ public struct CopilotCredentialSource: CredentialSource {
         return .success(Self.token(fromKeychainData: data))
     }
 
-    /// `gh` stores the bare token; other tools may wrap it in JSON. Both are accepted.
+    /// `gh` writes its keychain item through go-keyring, which on macOS base64-encodes the value
+    /// behind this prefix so it survives round-tripping through the `security` tool.
+    static let goKeyringPrefix = "go-keyring-base64:"
+
+    /// `gh` stores the token go-keyring-wrapped (older setups bare); other tools may wrap it in
+    /// JSON. All three are accepted.
     static func token(fromKeychainData data: Data) -> String? {
         guard let text = String(data: data, encoding: .utf8) else { return nil }
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
+        if trimmed.hasPrefix(Self.goKeyringPrefix) {
+            return goKeyringToken(String(trimmed.dropFirst(Self.goKeyringPrefix.count)))
+        }
         if trimmed.hasPrefix("{"),
            let object = try? JSONSerialization.jsonObject(with: Data(trimmed.utf8)) as? [String: Any] {
             for key in ["oauth_token", "access_token", "token"] {
@@ -118,6 +126,15 @@ public struct CopilotCredentialSource: CredentialSource {
             return nil
         }
         return trimmed
+    }
+
+    /// Nil for malformed base64, non-UTF-8 bytes or an empty payload, so the caller falls through
+    /// to the next store instead of sending garbage to GitHub.
+    private static func goKeyringToken(_ payload: String) -> String? {
+        guard let bytes = Data(base64Encoded: payload),
+              let decoded = String(data: bytes, encoding: .utf8) else { return nil }
+        let token = decoded.trimmingCharacters(in: .whitespacesAndNewlines)
+        return token.isEmpty ? nil : token
     }
 
     static func reason(for error: KeychainReadError) -> String {
