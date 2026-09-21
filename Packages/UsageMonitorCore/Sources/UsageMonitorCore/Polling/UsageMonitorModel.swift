@@ -126,8 +126,11 @@ public final class UsageMonitorModel {
         await poll(force: true)
     }
 
-    public func refreshLinkStates() async {
-        for id in statuses.map(\.provider) {
+    /// Probes the credential stores. Nil means every provider (Onboarding and Settings, where the
+    /// user is looking at the answer); start-up passes the enabled set so a switched-off
+    /// provider's keychain item is never read behind the user's back.
+    public func refreshLinkStates(only subset: Set<ProviderID>? = nil) async {
+        for id in statuses.map(\.provider) where subset?.contains(id) ?? true {
             guard let provider = providers[id] else { continue }
             let link = await provider.linkState()
             update(id) { $0.link = link }
@@ -138,6 +141,7 @@ public final class UsageMonitorModel {
     public func relink(_ id: ProviderID) async {
         guard let provider = providers[id] else { return }
         consecutiveFailures[id] = 0
+        provider.forgetCredentials()
         let link = await provider.linkState()
         update(id) {
             $0.link = link
@@ -161,7 +165,7 @@ public final class UsageMonitorModel {
     }
 
     private func runLoop() async {
-        await refreshLinkStates()
+        await refreshLinkStates(only: settings.enabledProviders)
         while !Task.isCancelled {
             await poll(force: false)
             do {
@@ -267,6 +271,13 @@ public final class UsageMonitorModel {
     }
 
     private func applyFailure(_ error: ProviderError, to id: ProviderID, diagnostic: inout ProviderDiagnostics) {
+        // ADR 0002: on a rejected or expired login, re-read the store once at the next poll.
+        switch error {
+        case .unauthorized, .credentialsExpired:
+            providers[id]?.forgetCredentials()
+        default:
+            break
+        }
         let failures = (consecutiveFailures[id] ?? 0) + 1
         consecutiveFailures[id] = failures
         diagnostic.failures += 1

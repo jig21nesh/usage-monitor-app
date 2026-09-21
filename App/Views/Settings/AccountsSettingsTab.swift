@@ -33,6 +33,8 @@ struct AccountsSettingsTab: View {
             }
         }
         .formStyle(.grouped)
+        // Start-up probes enabled providers only; this tab shows every provider, so probe the rest here.
+        .task { await model.refreshLinkStates() }
     }
 }
 
