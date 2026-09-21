@@ -19,19 +19,12 @@ and notarises it when notary credentials are also present.
 
 ## Cut a release
 
-```sh
-# 1. Bump MARKETING_VERSION (and CURRENT_PROJECT_VERSION) in project.yml, update CHANGELOG.md,
-#    merge through a pull request.
-# 2. Tag the merge commit on main and push the tag.
-git checkout main && git pull
-git tag -a v0.1.0 -m "v0.1.0"
-git push origin v0.1.0
-# 3. Watch the Release workflow, then check the Release page for the DMG and .sha256.
-gh run watch
-```
+Releases are built and published from a developer Mac with `scripts/release.sh` (see below).
 
-A manual build without a tag: **Actions > Release > Run workflow**, enter the version; the DMG
-appears as a workflow artifact.
+Before releasing, add a `## [X.Y.Z] - YYYY-MM-DD` section to `CHANGELOG.md` through a pull
+request; that section is the release notes. The build takes `MARKETING_VERSION` from the
+version you pass and `CURRENT_PROJECT_VERSION` from the git commit count, so the values in
+`project.yml` only matter for local Xcode builds.
 
 ## Build locally
 

@@ -118,10 +118,10 @@ enum AboutInfo {
         return url
     }
 
+    /// Marketing version only; the build number lives in Settings > Diagnostics where bug
+    /// reports need it.
     static var versionText: String {
-        let info = Bundle.main.infoDictionary
-        let short = info?["CFBundleShortVersionString"] as? String ?? "0"
-        let build = info?["CFBundleVersion"] as? String ?? "0"
-        return "Version \(short) (\(build))"
+        let short = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
+        return "Version \(short)"
     }
 }

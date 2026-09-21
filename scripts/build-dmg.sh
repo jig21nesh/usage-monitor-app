@@ -5,6 +5,9 @@
 # produces an ad-hoc signed DMG whose file name says "unsigned". Never uses `codesign --deep`
 # for signing: nested code (none today) is signed inside-out, then the app, then the DMG.
 #
+# The build carries the version given with --version (the release tag) as MARKETING_VERSION and
+# the git commit count as CURRENT_PROJECT_VERSION, so every DMG reports which commit built it.
+#
 # Environment:
 #   SIGNING_IDENTITY   "Developer ID Application: Name (TEAMID)"; empty means ad-hoc.
 #   NOTARY_PROFILE     notarytool keychain profile (xcrun notarytool store-credentials), or
@@ -16,7 +19,9 @@ usage() {
 Usage: scripts/build-dmg.sh [options]
 
 Options:
-  --version X.Y.Z   Version used in the DMG file name (default: MARKETING_VERSION in project.yml)
+  --version X.Y.Z   Marketing version built into the app and used in the DMG file name
+                    (default: MARKETING_VERSION in project.yml). The build number is the git
+                    commit count, or CURRENT_PROJECT_VERSION in project.yml outside a checkout.
   --output DIR      Output directory (default: dist)
   --skip-build      Reuse build/DerivedData/Build/Products/Release/UsageMonitor.app
   --no-notarize     Sign but do not notarise even when credentials are present
@@ -74,6 +79,17 @@ case "$VERSION" in
     *[!0-9A-Za-z.+-]*|"") die "version '$VERSION' contains unexpected characters" ;;
 esac
 
+# CFBundleVersion: the commit count identifies the exact build. Outside a checkout (a source
+# archive) fall back to the value in project.yml.
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    BUILD_NUMBER="$(git rev-list --count HEAD)"
+else
+    BUILD_NUMBER="$(awk '/^ *CURRENT_PROJECT_VERSION:/ {print $2; exit}' project.yml | tr -d '"')"
+fi
+case "$BUILD_NUMBER" in
+    ""|*[!0-9]*|0*) die "build number '$BUILD_NUMBER' is not a positive integer" ;;
+esac
+
 DEVELOPER_ID=0
 case "$SIGNING_IDENTITY" in
     "Developer ID Application:"*) DEVELOPER_ID=1 ;;
@@ -97,6 +113,7 @@ DMG_PATH="$OUTPUT_DIR/$DMG_NAME"
 
 log "Plan"
 note "version:        $VERSION"
+note "build number:   $BUILD_NUMBER"
 note "output:         $DMG_PATH"
 note "build:          $([ "$SKIP_BUILD" -eq 1 ] && echo "skipped (reuse $BUILT_APP)" || echo "Release via xcodebuild")"
 if [ -n "$SIGNING_IDENTITY" ]; then
@@ -119,6 +136,7 @@ if [ "$SKIP_BUILD" -eq 0 ]; then
     # identity and the source entitlements, so the result does not depend on local Xcode accounts.
     xcodebuild -project "$PRODUCT.xcodeproj" -scheme "$SCHEME" -configuration Release \
         -destination 'generic/platform=macOS' -derivedDataPath "$DERIVED_DATA" \
+        MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
         CODE_SIGNING_ALLOWED=NO -quiet build
 fi
 [ -d "$BUILT_APP" ] || die "built app not found at $BUILT_APP"
@@ -209,6 +227,7 @@ SIZE="$(du -h "$DMG_PATH" | awk '{print $1}')"
 
 log "Done"
 printf '    %-12s %s\n' "dmg" "$DMG_PATH"
+printf '    %-12s %s\n' "version" "$VERSION (build $BUILD_NUMBER)"
 printf '    %-12s %s\n' "size" "$SIZE"
 printf '    %-12s %s\n' "signing" "$([ "$DEVELOPER_ID" -eq 1 ] && echo "Developer ID" || echo "unsigned (ad-hoc)")"
 printf '    %-12s %s\n' "notarised" "$NOTARISED"
