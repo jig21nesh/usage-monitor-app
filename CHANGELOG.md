@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-21
+
 ### Added
 
 - Repository bootstrap: project rules, Architecture Decision Records, README, MIT license,
@@ -58,6 +60,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (#14).
 - App Sandbox read-only exceptions extended to the GitHub CLI, Copilot CLI, Cursor, Muse Code
   and OpenCode credential paths; Release builds no longer inject `get-task-allow` (#14).
+- About window shows the marketing version only; the build number moved to Settings >
+  Diagnostics and is now the git commit count of the build.
 
 ### Fixed
 
@@ -67,5 +71,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   it expires, the vendor rejects it, or you press **Re-link**, and start-up probes only the
   providers you enabled, so macOS asks at most once per launch per item instead of on every
   refresh (ADR 0002 amendment).
+- GitHub Copilot: decode the `go-keyring-base64:` wrapper the GitHub CLI uses for its keychain
+  token, so Copilot no longer gets 401 on Macs where `gh` keeps the token in the keychain (the
+  default).
 
-[Unreleased]: https://github.com/jig21nesh/usage-monitor-app/commits/main
+[Unreleased]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.1.0...main
+[0.1.0]: https://github.com/jig21nesh/usage-monitor-app/releases/tag/v0.1.0
