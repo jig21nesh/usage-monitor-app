@@ -63,5 +63,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Document the real Grok token lifetime (about six hours) and the re-link workaround (#7).
 - Diagnostics table lists the registered providers instead of every provider case (#14).
+- Fewer keychain consent dialogs: each credential is read once and kept in process memory until
+  it expires, the vendor rejects it, or you press **Re-link**, and start-up probes only the
+  providers you enabled, so macOS asks at most once per launch per item instead of on every
+  refresh (ADR 0002 amendment).
 
 [Unreleased]: https://github.com/jig21nesh/usage-monitor-app/commits/main

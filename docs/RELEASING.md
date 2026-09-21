@@ -45,6 +45,23 @@ NOTARY_PROFILE="UsageMonitor-notary" scripts/build-dmg.sh   # signed and notaris
 Flags: `--version X.Y.Z`, `--output DIR`, `--skip-build` (reuse the last Release build),
 `--no-notarize`, `--dry-run`.
 
+## Local install on your own Mac
+
+An ad-hoc build gets a new code identity on every rebuild, so macOS forgets the **Always Allow**
+you gave the previous build for the Claude Code and GitHub CLI keychain items and asks again.
+Sign local builds with an Apple Development identity instead: its code requirement is the bundle
+identifier plus your team, which does not change between builds.
+
+```sh
+security find-identity -v -p codesigning                    # list the identities on this Mac
+SIGNING_IDENTITY="Apple Development: Your Name (TEAMID)" scripts/build-dmg.sh --no-notarize
+```
+
+The DMG is still named `-unsigned` because an Apple Development identity is not valid for
+distribution; it is only for the Mac that holds the certificate. Click **Always Allow** once
+after the first launch. Apple Development certificates last one year: when yours expires the
+script falls back to ad-hoc signing and the dialog returns until you renew it and rebuild.
+
 ## One-time setup for signed releases
 
 Everything below needs the paid Apple Developer Program (US$99 per year) and the
@@ -122,6 +139,7 @@ xattr -d com.apple.quarantine "/Applications/AI Usage Monitor.app"
 Two consequences to know about:
 
 - Every ad-hoc build has a different code identity, so macOS may ask again after each update
-  whether the app can read the Claude Code keychain item.
+  whether the app can read the Claude Code keychain item (once per launch at most; see
+  [Local install on your own Mac](#local-install-on-your-own-mac) for a stable identity).
 - Homebrew disables casks that fail Gatekeeper checks (since September 2026), so a Homebrew
   cask has to wait until releases are notarised.

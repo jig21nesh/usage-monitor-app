@@ -62,3 +62,43 @@ wrapped with a Secure Enclave key via CryptoKit, and this ADR must be superseded
   rather than adding a second refresher that would rotate the CLI's refresh token.
 - Threat surface is limited to read-only access to three files or Keychain items that the user
   already trusts those CLIs with.
+
+## Amendment 2026-09-21: credentials cached in process memory
+
+"Read at poll time, hold for one request" produced far more keychain consent dialogs than the
+consequences above anticipated:
+
+- A locally built app is ad-hoc signed, so macOS ties **Always Allow** to that build's code hash
+  and asks again after every rebuild.
+- With a one-shot **Allow**, every poll re-read the Claude Code item, so the dialog came back at
+  each refresh interval.
+- Start-up probed the link state of every provider, so the GitHub CLI item was read even while
+  Copilot was switched off.
+
+Decision:
+
+- Every live provider wraps its source in `CachedCredentialSource`, which keeps the last
+  credential in process memory and reads the store again only when the credential is within
+  60 seconds of its own expiry, after the vendor rejects it (401 or 403) or the source reports it
+  expired, when the user presses **Re-link** or **Re-check**, or after the app restarts. Errors are
+  never cached. The credential still never touches disk, `UserDefaults`, the keychain or the log;
+  only the miss and its reason (`cold`, `expired`, `forgotten`) are logged.
+- Start-up probes the link state of enabled providers only. Onboarding and Settings > Accounts
+  still probe every provider when they open, because that is where the user is looking at the
+  answer.
+- Builds for the developer's own Mac are signed with an Apple Development identity
+  (`SIGNING_IDENTITY="Apple Development: …" scripts/build-dmg.sh --no-notarize`). The code
+  requirement is then the bundle identifier plus the team, stable across rebuilds, so one
+  **Always Allow** lasts. Public releases still follow ADR 0007.
+
+Consequences:
+
+- With **Allow**, at most one dialog per keychain item per launch; with **Always Allow** on a
+  build whose signature is stable, none.
+- A token revoked by a CLI re-login is noticed at the next poll (401), dropped, and re-read on the
+  poll after that: one failed poll, then recovery. This is the "re-read once" rule above,
+  implemented as a cache drop.
+- Tokens without an expiry (GitHub CLI) stay cached for the life of the process; only a 401,
+  **Re-link** or a restart re-reads them.
+- `CredentialSource` no longer forbids holding a credential between calls; it forbids writing it
+  anywhere and refreshing it.
