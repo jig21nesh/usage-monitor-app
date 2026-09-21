@@ -15,6 +15,8 @@ Package.resolved
 
 # Local, per-developer configuration (signing team etc.)
 Config/Local.xcconfig
+# Signing material for local releases (private key, certificate, notary API key)
+Config/Signing/
 
 # Coverage and build output
 coverage/
