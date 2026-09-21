@@ -46,3 +46,38 @@ Adopt option 2.
   profile for Developer ID distribution and do not block notarisation.
 - A changed signing identity (ad-hoc rebuilds, or the move from Apple Development to Developer
   ID) re-triggers the keychain consent dialog for the Claude Code item on users' Macs.
+
+## Amendment 2026-09-22: releases are built locally
+
+### Context
+
+The tag-triggered `release.yml` ran on GitHub's macOS runners, which are billed at ten times
+the Linux rate, and CI additionally built a throwaway DMG on every push. The maintainer now has
+a paid Apple Developer Program team with a Developer ID Application identity and notary
+credentials on one Mac, so the reason for keeping signing material in GitHub secrets is gone.
+
+### Decision
+
+- `scripts/release.sh`, run on the maintainer's Mac, replaces `.github/workflows/release.yml`.
+  It verifies that `main` is clean and in sync with origin, that `CHANGELOG.md` has a section
+  for the version and that the tag is free, builds the DMG with `scripts/build-dmg.sh`, creates
+  and pushes the annotated tag and publishes the GitHub Release with the DMG and its checksum.
+  The release notes are the `CHANGELOG.md` section plus the signing status and the SHA-256.
+- Signing material lives in the git-ignored `Config/Signing/` folder (private key, certificate
+  signing request, certificate, `.p8` notary key); the identity itself is in the login keychain
+  and the notary credentials in a notarytool keychain profile named `AIUsageMonitor`. No
+  secret is stored on GitHub.
+- CI no longer builds a DMG. `scripts/build-dmg.sh` keeps its dual mode so a Mac without the
+  identity can still produce a clearly labelled unsigned DMG; `release.sh` publishes one only
+  with `--allow-unsigned`.
+
+### Consequences
+
+- Releases depend on one machine: the Mac that holds the identity and the notary profile. A
+  second maintainer needs their own Developer ID certificate under the same team.
+- Notary credentials and the private key live in that Mac's keychain and in `Config/Signing/`;
+  a backup of the Mac contains them.
+- The README instructions for unsigned builds remain only as a fallback for self-compiled or
+  `--allow-unsigned` builds; published releases are notarised.
+- Deleting a tag or release stays a manual, explicitly approved step, so a bad release is
+  corrected by publishing the next version rather than by automation.
