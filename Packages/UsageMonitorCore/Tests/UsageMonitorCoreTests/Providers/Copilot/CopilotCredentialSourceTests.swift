@@ -169,6 +169,43 @@ struct CopilotCredentialSourceTests {
         #expect(CopilotCredentialSource.token(fromKeychainData: Data([0xFF, 0xFE])) == nil)
     }
 
+    static let fakeToken = "gho_fixture_not_real_0123456789"
+
+    /// What go-keyring writes on macOS: the prefix followed by standard, padded base64.
+    private static func goKeyring(_ payload: String) -> Data {
+        Data((CopilotCredentialSource.goKeyringPrefix + Data(payload.utf8).base64EncodedString()).utf8)
+    }
+
+    @Test func goKeyringWrappedKeychainTokenIsDecodedAndWinsOverHosts() throws {
+        let keychain = FakeKeychainReader(items: ["gh:github.com": Self.goKeyring(Self.fakeToken)])
+        let credential = try makeSource(keychain: keychain, hosts: Self.flatHosts).load()
+        #expect(credential.token == Self.fakeToken)
+        #expect(credential.source == "GitHub CLI")
+        #expect(credential.login == "octocat")
+    }
+
+    @Test func goKeyringWrapperWithMalformedBase64FallsThroughToHosts() throws {
+        let keychain = FakeKeychainReader(items: ["gh:github.com": Data("go-keyring-base64:@@not base64@@".utf8)])
+        let credential = try makeSource(keychain: keychain, hosts: Self.flatHosts).load()
+        #expect(credential.token == "gho_flat_token")
+        #expect(throws: ProviderError.credentialsNotFound) { try makeSource(keychain: keychain).load() }
+    }
+
+    @Test func goKeyringPayloadEdgeCases() {
+        let prefix = CopilotCredentialSource.goKeyringPrefix
+        let parse = CopilotCredentialSource.token(fromKeychainData:)
+        #expect(parse(Data(prefix.utf8)) == nil)
+        #expect(parse(Self.goKeyring("")) == nil)
+        #expect(parse(Self.goKeyring(" \n")) == nil)
+        #expect(parse(Data((prefix + Data([0xFF, 0xFE]).base64EncodedString()).utf8)) == nil)
+        #expect(parse(Data((prefix + "Z2hv_not-standard").utf8)) == nil)
+        #expect(parse(Self.goKeyring(Self.fakeToken + "\n")) == Self.fakeToken)
+        #expect(parse(Data(("  " + prefix + Data(Self.fakeToken.utf8).base64EncodedString() + "\n").utf8))
+            == Self.fakeToken)
+        #expect(parse(Data("gho_bare".utf8)) == "gho_bare")
+        #expect(parse(Data(#"{"oauth_token":"ghu_json"}"#.utf8)) == "ghu_json")
+    }
+
     @Test func descriptionNeverContainsTheToken() {
         let credential = CopilotCredential(token: "gho_SECRETSECRET", source: "GitHub CLI", login: "octocat")
         #expect(!String(describing: credential).contains("SECRET"))
