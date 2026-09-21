@@ -42,6 +42,7 @@ struct DiagnosticsSettingsTab: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("App \(Self.appVersion) · macOS \(ProcessInfo.processInfo.operatingSystemVersionString)")
                 Text("Enabled: \(enabledList) · Refresh every \(model.settings.refreshInterval.title)")
+                Text("Home folder access: \(model.homeFolderState.userMessage)")
                 Text("Logs: Console.app, subsystem \(UsageLog.subsystem). Tokens are never logged.")
             }
             .font(.caption)
