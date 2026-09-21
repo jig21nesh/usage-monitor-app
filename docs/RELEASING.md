@@ -44,7 +44,8 @@ certificates (the ones Xcode creates for free accounts) cannot notarise.
 
 2. **A notary profile named `AIUsageMonitor`.** Create an App Store Connect **Team** API key
    (App Store Connect > Users and Access > Integrations > App Store Connect API > Team Keys >
-   **+**; the Developer role is enough for notarisation), download the `.p8` once into
+   **+**; the Developer role is enough for notarisation, App Manager is needed for App
+   Store uploads), download the `.p8` once into
    `Config/Signing/`, note the Key ID and Issuer ID, then store the profile in the keychain:
 
    ```sh
@@ -83,6 +84,30 @@ is in the keychain; the notary profile answers. Then it builds the DMG with
 the checksum, prints the release notes, creates the annotated tag, pushes it and runs
 `gh release create` with the DMG and its `.sha256`. Flags: `--version`, `--notary-profile`
 (default `AIUsageMonitor`), `--allow-unsigned`, `--dry-run`, `-h`.
+
+## Build and upload the App Store version
+
+The Mac App Store build is produced from the same commit as the DMG, after `scripts/release.sh`
+has tagged it, by `scripts/build-appstore.sh` ([ADR 0010](adr/0010-mac-app-store-distribution.md)).
+Xcode signs the archive automatically with the team's cloud-managed Apple Distribution and Mac
+Installer Distribution certificates, so nothing else is imported into the keychain. The script
+authenticates with the API key already in `Config/Signing/` and needs the values in
+`notary.env`; uploads require that key to have the **App Manager** role.
+
+```sh
+scripts/build-appstore.sh --dry-run             # show the plan
+scripts/build-appstore.sh                       # archive and export dist/appstore/UsageMonitor.pkg
+scripts/build-appstore.sh --upload              # archive and upload to App Store Connect
+scripts/build-appstore.sh --version 0.2.0 --upload
+```
+
+The script sets `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` like `build-dmg.sh`, refuses
+an archive that is not sandboxed or that carries `get-task-allow`, and warns when
+temporary-exception entitlements are present because App Review rejects them. After an upload,
+App Store Connect processes the build for a few minutes; then, in the app record, set the
+version string to the same `X.Y.Z`, pick the build, complete the listing and submit for review.
+`CFBundleVersion` is the commit count, so a second upload for the same version needs a new
+commit on `main`.
 
 ## Recover from a bad release
 
