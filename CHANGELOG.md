@@ -67,5 +67,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   it expires, the vendor rejects it, or you press **Re-link**, and start-up probes only the
   providers you enabled, so macOS asks at most once per launch per item instead of on every
   refresh (ADR 0002 amendment).
+- GitHub Copilot: decode the `go-keyring-base64:` wrapper the GitHub CLI uses for its keychain
+  token, so Copilot no longer gets 401 on Macs where `gh` keeps the token in the keychain (the
+  default).
 
 [Unreleased]: https://github.com/jig21nesh/usage-monitor-app/commits/main
