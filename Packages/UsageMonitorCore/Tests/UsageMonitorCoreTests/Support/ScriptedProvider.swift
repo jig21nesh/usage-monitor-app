@@ -12,12 +12,15 @@ final class CallCounter: Sendable {
     }
 }
 
-/// Returns scripted results in order, repeating the last one. Counts fetches.
+/// Returns scripted results in order, repeating the last one. Counts fetches, link probes and
+/// credential drops.
 struct ScriptedProvider: UsageProvider {
     let id: ProviderID
     var link: LinkState = .unknown
     var results: [Result<UsageSnapshot, ProviderError>]
     let fetches = CallCounter()
+    let linkProbes = CallCounter()
+    let forgets = CallCounter()
 
     init(id: ProviderID, link: LinkState = .unknown, results: [Result<UsageSnapshot, ProviderError>]) {
         self.id = id
@@ -29,7 +32,14 @@ struct ScriptedProvider: UsageProvider {
         self.init(id: id, link: link, results: [result])
     }
 
-    func linkState() async -> LinkState { link }
+    func linkState() async -> LinkState {
+        linkProbes.increment()
+        return link
+    }
+
+    func forgetCredentials() {
+        forgets.increment()
+    }
 
     func fetchUsage() async throws(ProviderError) -> UsageSnapshot {
         let index = fetches.total

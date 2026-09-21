@@ -26,10 +26,19 @@ public struct CopilotUsageProvider: UsageProvider {
         now: @escaping @Sendable () -> Date
     ) -> CopilotUsageProvider {
         CopilotUsageProvider(
-            credentials: CopilotCredentialSource(keychain: keychain, fileSystem: fileSystem, environment: environment),
+            credentials: CachedCredentialSource(
+                CopilotCredentialSource(keychain: keychain, fileSystem: fileSystem, environment: environment),
+                label: ProviderID.copilot.rawValue,
+                expiry: { _ in nil },
+                now: now
+            ),
             client: CopilotUsageClient(http: http),
             now: now
         )
+    }
+
+    public func forgetCredentials() {
+        credentials.forget()
     }
 
     public func linkState() async -> LinkState {

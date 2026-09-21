@@ -32,13 +32,22 @@ public struct MuseUsageProvider: UsageProvider {
         now: @escaping @Sendable () -> Date
     ) -> MuseUsageProvider {
         MuseUsageProvider(
-            credentials: MuseCredentialSource(environment: environment, fileSystem: fileSystem, keychain: keychain),
+            credentials: CachedCredentialSource(
+                MuseCredentialSource(environment: environment, fileSystem: fileSystem, keychain: keychain),
+                label: ProviderID.muse.rawValue,
+                expiry: { _ in nil },
+                now: now
+            ),
             client: MuseUsageClient(http: http),
             now: now
         )
     }
 
     public var minimumPollInterval: Duration? { Self.pollFloor }
+
+    public func forgetCredentials() {
+        credentials.forget()
+    }
 
     public func linkState() async -> LinkState {
         do {

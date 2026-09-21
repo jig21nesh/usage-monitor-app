@@ -26,10 +26,19 @@ public struct GrokUsageProvider: UsageProvider {
         now: @escaping @Sendable () -> Date
     ) -> GrokUsageProvider {
         GrokUsageProvider(
-            credentials: GrokBuildCredentialSource(environment: environment, fileSystem: fileSystem, now: now),
+            credentials: CachedCredentialSource(
+                GrokBuildCredentialSource(environment: environment, fileSystem: fileSystem, now: now),
+                label: ProviderID.grok.rawValue,
+                expiry: { $0.expiresAt },
+                now: now
+            ),
             client: GrokUsageClient(http: http),
             now: now
         )
+    }
+
+    public func forgetCredentials() {
+        credentials.forget()
     }
 
     public func linkState() async -> LinkState {
