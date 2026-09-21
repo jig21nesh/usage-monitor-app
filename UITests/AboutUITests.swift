@@ -10,6 +10,7 @@ final class AboutUITests: XCTestCase {
         XCTAssertTrue(window.waitForExistence(timeout: 15))
         XCTAssertTrue(window.staticTexts["about.version"].waitForExistence(timeout: 10))
         XCTAssertTrue(window.staticTexts["about.version"].text.hasPrefix("Version "))
+        XCTAssertFalse(window.staticTexts["about.version"].text.contains("("))
         XCTAssertEqual(window.staticTexts["about.name"].text, "AI Usage Monitor")
         XCTAssertEqual(window.staticTexts["about.maker"].text, "Made by Jiggy Kakkad")
         XCTAssertTrue(window.staticTexts["about.tagline"].text.hasPrefix("Principal AI Engineer"))
