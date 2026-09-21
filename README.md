@@ -175,7 +175,7 @@ app version, who makes it, and links to the website, the source on GitHub, the i
 and the MIT licence.
 
 <img src="docs/images/about.png" width="400"
-     alt="About window with the app icon, version, Curious Pi Labs mark and tagline, and link buttons">
+     alt="About window with the app icon, version, maker and tagline, and link buttons">
 
 ## Configuration
 
@@ -528,8 +528,8 @@ macOS, Xcode and tool versions plus a redacted Diagnostics report.
 
 ## License and trademarks
 
-AI Usage Monitor is released under the [MIT License](LICENSE). Copyright (c) 2026 Curious Pi
-Labs.
+AI Usage Monitor is released under the [MIT License](LICENSE).
+Copyright (c) 2026 Jiggy Kakkad.
 
 In short: you may use, copy, modify, merge, publish, distribute, sublicense and sell copies of
 the software, provided the copyright and permission notice stay with it. The software is
@@ -541,9 +541,8 @@ frameworks only. Development tooling (XcodeGen, SwiftLint, markdownlint) is not 
 the app.
 
 **Trademarks:** Claude, ChatGPT, Codex, Grok, GitHub Copilot, Cursor and Muse are trademarks of
-their respective owners. The Curious Pi Labs name and logo are trademarks of Curious Pi Labs and
-are not covered by the MIT licence. This project is not affiliated with or endorsed by any of
-these companies.
+their respective owners. This project is not affiliated with or endorsed by any of these
+companies.
 
-**Made by [Curious Pi Labs](https://curiouspilabs.com).** Curious Pi Labs builds products with
-curiosity, precision, and rigor. Every product is tested, measured, and proven before it ships.
+**Made by [Jiggy Kakkad](https://jiggykakkad.com).** Principal AI Engineer in Sydney, Australia,
+building AI systems for production.

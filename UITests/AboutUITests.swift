@@ -11,8 +11,8 @@ final class AboutUITests: XCTestCase {
         XCTAssertTrue(window.staticTexts["about.version"].waitForExistence(timeout: 10))
         XCTAssertTrue(window.staticTexts["about.version"].text.hasPrefix("Version "))
         XCTAssertEqual(window.staticTexts["about.name"].text, "AI Usage Monitor")
-        XCTAssertEqual(window.staticTexts["about.maker"].text, "Made by Curious Pi Labs")
-        XCTAssertTrue(window.staticTexts["about.tagline"].text.hasPrefix("Curious Pi Labs builds products"))
+        XCTAssertEqual(window.staticTexts["about.maker"].text, "Made by Jiggy Kakkad")
+        XCTAssertTrue(window.staticTexts["about.tagline"].text.hasPrefix("Principal AI Engineer"))
         for link in ["website", "github", "issues", "license"] {
             XCTAssertTrue(window.buttons["about.\(link)"].exists, "link button \(link) should exist")
         }
