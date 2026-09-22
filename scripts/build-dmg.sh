@@ -168,7 +168,8 @@ note "nested items signed: $NESTED_COUNT"
 log "Signing $PRODUCT.app"
 codesign --force --sign "$IDENTITY_ARG" --options runtime "$TIMESTAMP_ARG" --entitlements "$ENTITLEMENTS" "$BUILT_APP"
 codesign --verify --deep --strict --verbose=2 "$BUILT_APP"
-EXCEPTION_COUNT="$(codesign -d --entitlements :- "$BUILT_APP" 2>/dev/null | grep -o '<string>/[^<]*' | wc -l | tr -d ' ')"
+# grep exits 1 when nothing matches, which is the expected outcome here; pipefail must not abort.
+EXCEPTION_COUNT="$(codesign -d --entitlements :- "$BUILT_APP" 2>/dev/null | { grep -o '<string>/[^<]*' || true; } | wc -l | tr -d ' ')"
 note "sandbox temporary path exceptions in signed app: $EXCEPTION_COUNT (expected 0, ADR 0009)"
 
 # 3. Stage and create the DMG
