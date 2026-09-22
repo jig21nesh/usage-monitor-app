@@ -148,9 +148,11 @@ output shows `branding: <file>` or `branding: defaults`). The five settings:
 xcconfig treats `//` as the start of a comment, so write URLs as `https:/$()/example.com`.
 
 The logo needs the catalog to be part of the generated project without appearing in
-`project.yml`. `scripts/bootstrap.sh` generates from `Config/Branding/Branding.yml` whenever
-that file exists (from the repository root, so paths are root-relative) and from `project.yml`
-otherwise. The branding spec includes the main spec and adds the catalog:
+`project.yml`. `scripts/build-appstore.sh` points `scripts/bootstrap.sh` at
+`Config/Branding/Branding.yml` (through `USAGE_MONITOR_PROJECT_SPEC`) only while it builds
+the store archive; every other build, including `scripts/release.sh`, generates from
+`project.yml`, so the logo never enters the DMG even on the release Mac. The branding spec
+includes the main spec and adds the catalog:
 
 ```yaml
 include:
