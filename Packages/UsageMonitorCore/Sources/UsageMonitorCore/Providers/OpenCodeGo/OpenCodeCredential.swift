@@ -43,6 +43,7 @@ public struct OpenCodeCredentialSource: CredentialSource {
             switch error {
             case .notFound: throw .credentialsNotFound
             case .notReadable: throw .credentialsUnreadable("opencode_file")
+            case .accessNotGranted: throw .credentialsUnreadable(ProviderError.homeFolderNotGranted)
             case .tooLarge: throw .credentialsMalformed("opencode_file_size")
             }
         }

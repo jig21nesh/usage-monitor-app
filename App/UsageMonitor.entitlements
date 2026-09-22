@@ -4,17 +4,11 @@
 <dict>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
+	<key>com.apple.security.files.bookmarks.app-scope</key>
+	<true/>
+	<key>com.apple.security.files.user-selected.read-only</key>
+	<true/>
 	<key>com.apple.security.network.client</key>
 	<true/>
-	<key>com.apple.security.temporary-exception.files.home-relative-path.read-only</key>
-	<array>
-		<string>/.codex/auth.json</string>
-		<string>/.grok/auth.json</string>
-		<string>/.config/gh/hosts.yml</string>
-		<string>/.copilot/config.json</string>
-		<string>/.config/muse/auth.json</string>
-		<string>/.local/share/opencode/auth.json</string>
-		<string>/Library/Application Support/Cursor/User/globalStorage/</string>
-	</array>
 </dict>
 </plist>

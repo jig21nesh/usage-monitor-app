@@ -57,7 +57,16 @@ public struct MuseCredentialSource: CredentialSource {
     }
 
     public func load() throws(ProviderError) -> MuseCredential {
-        let fileLogin = try readFile()
+        // A missing home folder grant (ADR 0009) must not hide a keychain login; it only decides
+        // the final error when the keychain has nothing either.
+        let fileLogin: FileLogin?
+        var grantMissing = false
+        do throws(ProviderError) {
+            fileLogin = try readFile()
+        } catch .credentialsUnreadable(let reason) where reason == ProviderError.homeFolderNotGranted {
+            fileLogin = nil
+            grantMissing = true
+        }
         if let token = fileLogin?.token {
             return try Self.validated(token, email: fileLogin?.email)
         }
@@ -65,6 +74,9 @@ public struct MuseCredentialSource: CredentialSource {
         // the token in the keychain item.
         if let credential = try readKeychain(emailHint: fileLogin?.email) {
             return credential
+        }
+        if grantMissing {
+            throw .credentialsUnreadable(ProviderError.homeFolderNotGranted)
         }
         throw .credentialsNotFound
     }
@@ -82,6 +94,7 @@ public struct MuseCredentialSource: CredentialSource {
             switch error {
             case .notFound: return nil
             case .notReadable: throw .credentialsUnreadable("muse_file")
+            case .accessNotGranted: throw .credentialsUnreadable(ProviderError.homeFolderNotGranted)
             case .tooLarge: throw .credentialsMalformed("muse_file_size")
             }
         }

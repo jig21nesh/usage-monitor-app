@@ -7,6 +7,15 @@ struct AccountsSettingsTab: View {
 
     var body: some View {
         Form {
+            Section("Home folder access") {
+                HomeFolderAccessControls(identifierPrefix: "settings.homeFolder", showsRevoke: true)
+                Text("""
+                    Needed to read the login files that Codex, Grok Build, GitHub CLI, Cursor, Muse Code and \
+                    OpenCode keep in your home folder. Read-only; keychain logins such as Claude do not need it.
+                    """)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
             ForEach(model.statuses) { status in
                 Section {
                     AccountRow(status: status)

@@ -52,7 +52,16 @@ public struct CopilotCredentialSource: CredentialSource {
 
     public func load() throws(ProviderError) -> CopilotCredential {
         // Read hosts.yml first so the login name is available even when the token lives in the keychain.
-        let hosts = try readHosts()
+        // A missing home folder grant (ADR 0009) must not hide a keychain login, so it only decides
+        // the final error when nothing else is found.
+        let hosts: Hosts?
+        var grantMissing = false
+        do throws(ProviderError) {
+            hosts = try readHosts()
+        } catch .credentialsUnreadable(let reason) where reason == ProviderError.homeFolderNotGranted {
+            hosts = nil
+            grantMissing = true
+        }
         var firstKeychainFailure: ProviderError?
 
         switch keychainToken(service: Self.ghKeychainService) {
@@ -86,6 +95,9 @@ public struct CopilotCredentialSource: CredentialSource {
 
         if let firstKeychainFailure {
             throw firstKeychainFailure
+        }
+        if grantMissing {
+            throw .credentialsUnreadable(ProviderError.homeFolderNotGranted)
         }
         throw .credentialsNotFound
     }
@@ -160,6 +172,7 @@ public struct CopilotCredentialSource: CredentialSource {
             switch error {
             case .notFound: return nil
             case .notReadable: throw .credentialsUnreadable("gh_hosts")
+            case .accessNotGranted: throw .credentialsUnreadable(ProviderError.homeFolderNotGranted)
             case .tooLarge: throw .credentialsMalformed("gh_hosts_size")
             }
         }

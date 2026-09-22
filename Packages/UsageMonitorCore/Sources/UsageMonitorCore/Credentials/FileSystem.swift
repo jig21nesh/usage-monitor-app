@@ -4,6 +4,8 @@ public enum FileReadError: Error, Sendable, Hashable {
     case notFound
     case notReadable(String)
     case tooLarge(limit: Int)
+    /// The file sits in the home folder and the user has not granted access yet (ADR 0009).
+    case accessNotGranted
 }
 
 /// Read-only file access with a size cap, so a credential file can never be read unbounded.

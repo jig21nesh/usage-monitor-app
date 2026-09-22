@@ -7,6 +7,23 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- App Sandbox no longer relies on temporary-exception entitlements for the seven vendor
+  credential paths. The user grants read-only access to their home folder once, through the
+  standard macOS folder picker, and the app keeps a security-scoped bookmark (ADR 0009). The
+  same build is now suitable for the Mac App Store.
+- File-backed providers report "Grant access to your home folder" instead of "could not be
+  read" while the grant is missing.
+
+### Added
+
+- "Home folder access" card in the Welcome window and section in Settings > Accounts with
+  Grant and Revoke; the grant state also appears in the Diagnostics footer.
+- `scripts/build-appstore.sh` archives, signs and exports or uploads the Mac App Store build
+  from the same commit as the DMG (ADR 0010); `Info.plist` declares exempt encryption so
+  uploads skip the export compliance question.
+
 ## [0.1.0] - 2026-09-21
 
 ### Added
