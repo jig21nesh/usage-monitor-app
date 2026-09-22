@@ -26,7 +26,7 @@ public struct UserEnvironment: Sendable {
     }
 
     /// Under App Sandbox `NSHomeDirectory()` is the container, so ask the passwd database instead (ADR 0002).
-    static func realHomeDirectory() -> URL {
+    public static func realHomeDirectory() -> URL {
         var entry = passwd()
         var result: UnsafeMutablePointer<passwd>?
         let suggested = sysconf(Int32(_SC_GETPW_R_SIZE_MAX))

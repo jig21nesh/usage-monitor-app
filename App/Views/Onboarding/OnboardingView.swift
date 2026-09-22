@@ -11,6 +11,7 @@ struct OnboardingView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     header
+                    homeFolderAccess
                     ForEach(model.statuses) { status in
                         OnboardingProviderCard(status: status)
                     }
@@ -63,6 +64,24 @@ struct OnboardingView: View {
                 """)
                 .font(.body)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    /// The sandbox grant every file-backed provider depends on (ADR 0009); keychain logins do not need it.
+    private var homeFolderAccess: some View {
+        GroupBox("Home folder access") {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("""
+                    Codex, Grok Build, GitHub CLI, Cursor, Muse Code and OpenCode keep their logins in files in \
+                    your home folder. macOS keeps this app in a sandbox, so it can only read them after you grant \
+                    access once. The grant is read-only and you can revoke it in Settings > Accounts.
+                    """)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                HomeFolderAccessControls(identifierPrefix: "onboarding.homeFolder")
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(4)
         }
     }
 

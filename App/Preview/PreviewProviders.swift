@@ -26,8 +26,23 @@ enum PreviewComposition {
         return UsageMonitorModel(
             providers: PreviewProviders.providers(for: options.scenario),
             settingsStore: store,
-            sleeper: IdleSleeper()
+            sleeper: IdleSleeper(),
+            homeFolder: makeHomeFolderAccess(firstLaunch: options.firstLaunch)
         )
+    }
+
+    /// A first launch starts without the grant so onboarding's Grant button is exercised; other
+    /// launches start granted. The path is fixed so screenshots never show a real user name.
+    static func makeHomeFolderAccess(firstLaunch: Bool) -> BookmarkHomeFolderAccess {
+        let home = URL(filePath: "/Users/you", directoryHint: .isDirectory)
+        let store = MemoryBookmarkStore()
+        let access = BookmarkHomeFolderAccess(expectedDirectory: home, store: store, bookmarks: PathBookmarks())
+        if !firstLaunch {
+            store.save(Data(home.path(percentEncoded: false).utf8))
+            // UI-test launches never call `model.start()`, so activate here as start() would.
+            access.activate()
+        }
+        return access
     }
 
     /// Runs as many polls as the scenario needs to reach its end state; the loop never starts.
@@ -37,6 +52,33 @@ enum PreviewComposition {
             await model.refreshNow()
         }
     }
+}
+
+/// In-memory bookmark store for UI tests; nothing reaches `UserDefaults`.
+nonisolated final class MemoryBookmarkStore: BookmarkStore, Sendable {
+    private let value = Mutex<Data?>(nil)
+
+    func load() -> Data? { value.withLock { $0 } }
+
+    func save(_ bookmark: Data) { value.withLock { $0 = bookmark } }
+
+    func clear() { value.withLock { $0 = nil } }
+}
+
+/// Bookmarks that are just the path, so UI tests never touch the real security-scope machinery.
+nonisolated struct PathBookmarks: SecurityScopedBookmarks {
+    func makeBookmark(for url: URL) throws -> Data { Data(url.path(percentEncoded: false).utf8) }
+
+    struct Unreadable: Error {}
+
+    func resolve(_ bookmark: Data) throws -> (url: URL, isStale: Bool) {
+        guard let path = String(bytes: bookmark, encoding: .utf8) else { throw Unreadable() }
+        return (URL(filePath: path, directoryHint: .isDirectory), false)
+    }
+
+    func startAccess(_ url: URL) -> Bool { true }
+
+    func stopAccess(_ url: URL) {}
 }
 
 /// Sleeps long enough that the poll loop never fires during a UI test, yet stays cancellable.

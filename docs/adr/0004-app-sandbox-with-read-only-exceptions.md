@@ -1,7 +1,7 @@
 # ADR 0004: App Sandbox on with read-only exceptions, Hardened Runtime on
 
 Date: 2026-09-19
-Status: Accepted
+Status: Accepted, amended by [ADR 0009](0009-user-granted-home-folder-access.md) on 2026-09-22
 
 ## Context
 
@@ -48,3 +48,14 @@ keychain ok present=true bytes=524
   validation exceptions.
 - Distribution outside the App Store still requires Developer ID signing and notarisation,
   which are out of scope for the first release.
+
+## Amendment 2026-09-22: temporary exceptions replaced by a user grant
+
+The Mac App Store became a target, and App Review does not accept home-relative
+temporary-exception entitlements for seven paths. [ADR 0009](0009-user-granted-home-folder-access.md)
+replaces them with `com.apple.security.files.user-selected.read-only` and
+`com.apple.security.files.bookmarks.app-scope`: the user grants the home folder once through the
+open panel and the app keeps a read-only security-scoped bookmark. App Sandbox, Hardened Runtime,
+outbound-only networking and keychain access through the normal consent dialog are unchanged.
+The spike evidence above remains valid for the sandbox itself; the file evidence is superseded by
+the table in ADR 0009.

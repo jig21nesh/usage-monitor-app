@@ -93,6 +93,7 @@ public struct CursorCredentialSource: CredentialSource {
             switch error {
             case .notFound: return nil
             case .notReadable: throw .credentialsUnreadable("cursor_file")
+            case .accessNotGranted: throw .credentialsUnreadable(ProviderError.homeFolderNotGranted)
             case .tooLarge: throw .credentialsMalformed("cursor_file_size")
             }
         }

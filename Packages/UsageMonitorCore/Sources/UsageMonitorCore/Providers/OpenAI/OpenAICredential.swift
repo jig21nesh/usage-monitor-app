@@ -68,6 +68,7 @@ public struct CodexAuthFileCredentialSource: CredentialSource {
             switch error {
             case .notFound: throw .credentialsNotFound
             case .notReadable: throw .credentialsUnreadable("codex_file")
+            case .accessNotGranted: throw .credentialsUnreadable(ProviderError.homeFolderNotGranted)
             case .tooLarge: throw .credentialsMalformed("codex_file_size")
             }
         }

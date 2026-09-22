@@ -88,6 +88,9 @@ notarised by Apple; see [Installation](#installation).
 | Muse Code | [Muse Code CLI](https://dev.meta.ai/docs/muse-code) with a Muse Code subscription | `muse login` |
 | OpenCode Go | [OpenCode](https://opencode.ai) CLI with a Go plan | `opencode auth login` |
 
+- A one-time grant of read-only access to your home folder, given in the Welcome window through
+  the standard macOS folder picker. The app is sandboxed and that is how it is allowed to read
+  the login files the tools above keep there; Claude's keychain login does not need it.
 - To build from source: Xcode 26.6 or later, [XcodeGen](https://github.com/yonaskolb/XcodeGen)
   and [SwiftLint](https://github.com/realm/SwiftLint).
 
@@ -139,19 +142,24 @@ The generated Xcode project and your local signing config are gitignored on purp
 
 ## Quick start
 
-1. Launch the app. The Welcome window lists all seven providers, shows which logins it found on
-   this Mac, and switches those providers on for you. Use the **Show** switch on each card to
-   change that, and **Re-check** after you sign in to a tool.
+1. Launch the app. The Welcome window opens with a **Home folder access** card at the top.
+   Click **Grant Access…**, leave the picker on your home folder and click **Grant Access**.
+   That one read-only grant is what lets the sandboxed app read the login files that Codex,
+   Grok Build, GitHub CLI, Cursor, Muse Code and OpenCode keep in your home folder; you can
+   revoke it any time in Settings > Accounts.
+2. The window then lists all seven providers, shows which logins it found on this Mac, and
+   switches those providers on for you. Use the **Show** switch on each card to change that,
+   and **Re-check** after you sign in to a tool.
 
    <img src="docs/images/onboarding.png" width="480"
-        alt="Welcome window listing the seven providers with their detected logins">
-2. For Claude, macOS may ask whether the app can read the "Claude Code-credentials" item in your
+        alt="Welcome window with the home folder access card and the seven provider cards">
+3. For Claude, macOS may ask whether the app can read the "Claude Code-credentials" item in your
    keychain. Choose **Always Allow**. With **Allow** the app asks again at most once per launch,
    because it reads the item once and keeps it in memory until it expires; an unsigned (ad-hoc)
    build asks again after every rebuild, see [Troubleshooting](#troubleshooting).
-3. Tick **Launch at login** if you want the monitor to start with your Mac, then click **Done**.
+4. Tick **Launch at login** if you want the monitor to start with your Mac, then click **Done**.
    The app keeps running in the menu bar.
-4. Click the menu bar icon to open the usage panel. **Refresh now** forces an immediate update.
+5. Click the menu bar icon to open the usage panel. **Refresh now** forces an immediate update.
 
 If a provider later shows **Re-link needed**, run that tool's login command again and click
 **Re-link** in Settings. The app never refreshes vendor tokens itself.
@@ -410,11 +418,12 @@ project.yml                  XcodeGen spec; UsageMonitor.xcodeproj is generated 
 - It **never refreshes or rotates** tokens and **never calls inference endpoints**.
 - Outbound HTTPS only, under App Transport Security, with an ephemeral, cookie-less session and
   a 1 MB response cap.
-- Hardened Runtime is on. App Sandbox is on, with read-only exceptions limited to seven paths:
-  `~/.codex/auth.json`, `~/.grok/auth.json`, `~/.config/gh/hosts.yml`, `~/.copilot/config.json`,
-  `~/.config/muse/auth.json`, `~/.local/share/opencode/auth.json` and Cursor's
-  `~/Library/Application Support/Cursor/User/globalStorage/` folder. Keychain items are read
-  through the normal macOS consent mechanism.
+- Hardened Runtime is on. App Sandbox is on with four entitlements: `app-sandbox`,
+  `network.client`, `files.user-selected.read-only` and `files.bookmarks.app-scope`. There are
+  no temporary-exception entitlements: the app can read a file in your home folder only after
+  you grant the folder once in the macOS picker, the grant is read-only, it is stored as a
+  security-scoped bookmark in the app's own preferences, and Settings > Accounts revokes it.
+  Keychain items are read through the normal macOS consent mechanism and need no grant.
 - Cursor's local database is opened read-only; the app never touches its refresh token.
 - Muse Code's endpoint returns an API key alongside the usage numbers; the app decodes past it
   and never keeps, logs or displays it.
@@ -429,7 +438,8 @@ Details: [SECURITY.md](SECURITY.md),
 [ADR 0002](docs/adr/0002-reuse-official-cli-credentials-no-token-persistence.md),
 [ADR 0004](docs/adr/0004-app-sandbox-with-read-only-exceptions.md),
 [ADR 0006](docs/adr/0006-local-only-observability.md),
-[ADR 0008](docs/adr/0008-additional-providers-and-menu-bar-status.md).
+[ADR 0008](docs/adr/0008-additional-providers-and-menu-bar-status.md),
+[ADR 0009](docs/adr/0009-user-granted-home-folder-access.md).
 
 ## Terms of service
 
@@ -444,9 +454,10 @@ time. The maintainers accept that risk for the project, not on your behalf. See
 | Symptom | Cause | What to do |
 |---|---|---|
 | **Not linked** | The vendor tool is not installed, or you have not signed in | Install the tool, run its login command (see [Requirements](#requirements)), then **Re-check** |
+| **Not linked: home folder access not granted** (every provider except Claude) | The sandbox grant is missing, was revoked, or went stale after your home folder moved | Click **Grant Access…** in the Welcome window or Settings > Accounts, keep the picker on your home folder and click **Grant Access** |
 | **Re-link needed** | The stored token expired or the vendor rejected it | Sign in with the tool again, then **Re-link** in Settings. The app never refreshes tokens itself |
 | OpenAI stays not linked although Codex works | Codex is storing credentials in the system keyring instead of `~/.codex/auth.json` | Not supported yet; see [Roadmap](#roadmap). Switch Codex back to file storage or wait for keyring support |
-| Custom `CODEX_HOME`, `GROK_HOME`, `GH_CONFIG_DIR`, `XDG_*` or `MUSE_AUTH_PATH` is ignored | Under App Sandbox only the default paths are readable; relative or empty overrides are always ignored | Keep the default locations, or run an unsandboxed development build |
+| Custom `CODEX_HOME`, `GROK_HOME`, `GH_CONFIG_DIR`, `XDG_*` or `MUSE_AUTH_PATH` is ignored | Under App Sandbox only paths inside the granted home folder are readable; relative or empty overrides are always ignored | Keep the store inside your home folder, or run an unsandboxed development build |
 | Grok shows "requires a newer client" | The billing endpoint returned HTTP 426 (client version gate) | Update the app; if the latest version is affected, open a [provider endpoint issue](https://github.com/jig21nesh/usage-monitor-app/issues/new/choose) |
 | Grok shows "re-link needed" most of the time | Grok Build tokens last about six hours and the CLI refreshes them only when it runs | Run any `grok` command (for example `grok models`), then **Re-link** |
 | Claude shows "rate limited" | HTTP 429 from the usage endpoint | Nothing to do; backoff handles it. Choose a longer refresh interval if it recurs |

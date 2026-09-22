@@ -49,6 +49,7 @@ public struct GrokBuildCredentialSource: CredentialSource {
         switch error {
         case .notFound: .credentialsNotFound
         case .notReadable: .credentialsUnreadable("grok_file")
+        case .accessNotGranted: .credentialsUnreadable(ProviderError.homeFolderNotGranted)
         case .tooLarge: .credentialsMalformed("grok_file_size")
         }
     }
