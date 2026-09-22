@@ -13,12 +13,13 @@ if [ ! -f Config/Local.xcconfig ]; then
     echo "Created Config/Local.xcconfig from the example. Set DEVELOPMENT_TEAM before archiving." >&2
 fi
 
-# A release Mac may carry a git-ignored publisher branding spec that includes project.yml and
-# adds the logo asset catalog (ADR 0011). Everyone else generates from project.yml alone.
-SPEC="project.yml"
-BRANDING_SPEC="Config/Branding/Branding.yml"
-if [ -f "$BRANDING_SPEC" ]; then
-    SPEC="$BRANDING_SPEC"
-fi
+# The store build asks for the git-ignored publisher branding spec through this variable
+# (ADR 0011). Its mere presence on disk must not change the open-source DMG, so nothing here
+# looks for that file on its own.
+SPEC="${USAGE_MONITOR_PROJECT_SPEC:-project.yml}"
+case "$SPEC" in
+    *[!A-Za-z0-9_./-]*|/*|*..*) echo "USAGE_MONITOR_PROJECT_SPEC '$SPEC' must be a relative path inside the repository" >&2; exit 1 ;;
+esac
+[ -f "$SPEC" ] || { echo "project spec not found: $SPEC" >&2; exit 1; }
 xcodegen generate --quiet --spec "$SPEC" --project . --project-root .
 echo "Generated UsageMonitor.xcodeproj from $SPEC"

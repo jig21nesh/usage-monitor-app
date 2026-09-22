@@ -41,8 +41,10 @@ Adopt option 3.
   accepts only `http(s)` website URLs. The About window shows "Made by <name>", the tagline,
   the website link, "Copyright © 2026 <holder>. Released under the MIT License." plus the
   trademark sentence, and the logo only when the named image resolves in the bundle.
-- `scripts/bootstrap.sh` generates the project from `Config/Branding/Branding.yml` when that
-  file exists and from `project.yml` otherwise. The branding spec includes `project.yml` with
+- `scripts/bootstrap.sh` generates the project from the spec named by
+  `USAGE_MONITOR_PROJECT_SPEC`, default `project.yml`; only `scripts/build-appstore.sh` sets it
+  to `Config/Branding/Branding.yml`, so the file's presence on the release Mac never changes the
+  DMG build. The branding spec includes `project.yml` with
   `relativePaths: false` and adds `Config/Branding/BrandAssets.xcassets` to the app target, so
   the logo catalog reaches the build without a reference in the committed spec. (An
   `optional` source path in `project.yml` was tried first; XcodeGen keeps the dangling

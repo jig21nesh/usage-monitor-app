@@ -56,6 +56,7 @@ APP_CERTIFICATE="Apple Distribution"
 INSTALLER_CERTIFICATE="3rd Party Mac Developer Installer"
 PROFILE_DIRS=("$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles" "$HOME/Library/MobileDevice/Provisioning Profiles")
 BRANDING_XCCONFIG="${APP_STORE_BRANDING:-Config/Branding/AppStore.xcconfig}"
+BRANDING_SPEC="${APP_STORE_BRANDING_SPEC:-Config/Branding/Branding.yml}"
 
 VERSION=""
 OUTPUT_DIR="dist/appstore"
@@ -144,10 +145,13 @@ done
 # defaults. The matching logo catalog, if any, enters the project through scripts/bootstrap.sh.
 BRANDING_ARGS=()
 BRANDING_NOTE="defaults"
+PROJECT_SPEC="project.yml"
 if [ -f "$BRANDING_XCCONFIG" ]; then
     [ -r "$BRANDING_XCCONFIG" ] || die "branding xcconfig $BRANDING_XCCONFIG is not readable"
     BRANDING_ARGS=(-xcconfig "$BRANDING_XCCONFIG")
     BRANDING_NOTE="$BRANDING_XCCONFIG"
+    # The logo catalog rides in through the branding project spec, only for this build.
+    [ -f "$BRANDING_SPEC" ] && PROJECT_SPEC="$BRANDING_SPEC"
 fi
 
 log "Plan"
@@ -157,13 +161,14 @@ note "team:           $TEAM_ID"
 note "signing:        $APP_CERTIFICATE + $INSTALLER_CERTIFICATE, profile '$PROFILE_NAME'"
 note "destination:    $DESTINATION$([ "$UPLOAD" -eq 0 ] && echo " to $OUTPUT_DIR")"
 note "branding:       $BRANDING_NOTE"
+note "project spec:   $PROJECT_SPEC"
 if [ "$DRY_RUN" -eq 1 ]; then
     log "Dry run; nothing built."
     exit 0
 fi
 
 log "Generating project"
-scripts/bootstrap.sh
+USAGE_MONITOR_PROJECT_SPEC="$PROJECT_SPEC" scripts/bootstrap.sh
 
 log "Archiving Release"
 rm -rf "$ARCHIVE_PATH"
