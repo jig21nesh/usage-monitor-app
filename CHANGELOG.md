@@ -20,6 +20,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - "Home folder access" card in the Welcome window and section in Settings > Accounts with
   Grant and Revoke; the grant state also appears in the Diagnostics footer.
+- `scripts/build-appstore.sh` archives, signs and exports or uploads the Mac App Store build
+  from the same commit as the DMG (ADR 0010); `Info.plist` declares exempt encryption so
+  uploads skip the export compliance question.
 
 ## [0.1.0] - 2026-09-21
 

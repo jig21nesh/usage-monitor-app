@@ -44,7 +44,8 @@ certificates (the ones Xcode creates for free accounts) cannot notarise.
 
 2. **A notary profile named `AIUsageMonitor`.** Create an App Store Connect **Team** API key
    (App Store Connect > Users and Access > Integrations > App Store Connect API > Team Keys >
-   **+**; the Developer role is enough for notarisation), download the `.p8` once into
+   **+**; the Developer role is enough for notarisation, App Manager is needed for App
+   Store uploads), download the `.p8` once into
    `Config/Signing/`, note the Key ID and Issuer ID, then store the profile in the keychain:
 
    ```sh
@@ -57,8 +58,9 @@ certificates (the ones Xcode creates for free accounts) cannot notarise.
    releases on the repository.
 
 `Config/Signing/` ends up holding `developer-id.key`, `developer-id.csr`,
-`developerID_application.cer`, `developer-id.p12`, `AuthKey_<KEYID>.p8` and, for reference,
-`notary.env` with `NOTARY_KEY_ID` and `NOTARY_ISSUER_ID`. The private key and the `.p8` are
+`developerID_application.cer`, `AuthKey_<KEYID>.p8`, `notary.env` (with `NOTARY_KEY_ID`,
+`NOTARY_ISSUER_ID` and `NOTARY_KEY_PATH`) and, once the App Store material exists, the two
+extra key/CSR/certificate triples and the `.provisionprofile` described below. The private key and the `.p8` are
 secrets: keep the folder mode `700`, keep the files mode `600`, and remember that a backup of
 this Mac contains them. The folder is listed in `.gitignore`; `git status` must never show it.
 
@@ -83,6 +85,49 @@ is in the keychain; the notary profile answers. Then it builds the DMG with
 the checksum, prints the release notes, creates the annotated tag, pushes it and runs
 `gh release create` with the DMG and its `.sha256`. Flags: `--version`, `--notary-profile`
 (default `AIUsageMonitor`), `--allow-unsigned`, `--dry-run`, `-h`.
+
+## Build and upload the App Store version
+
+The Mac App Store build is produced from the same commit as the DMG, after `scripts/release.sh`
+has tagged it, by `scripts/build-appstore.sh` ([ADR 0010](adr/0010-mac-app-store-distribution.md)).
+The export is signed manually with three pieces of material that live in `Config/Signing/`
+(once per Mac, and again when they expire after a year):
+
+1. **Apple Distribution** and **Mac Installer Distribution** certificates, created exactly like
+   the Developer ID one above: a fresh key and CSR per certificate (`apple-distribution.key`,
+   `mac-installer.key`), the CSR uploaded at
+   <https://developer.apple.com/account/resources/certificates/add>, the `.cer` downloaded
+   (`distribution.cer`, `mac_installer.cer`), then bundled with its key into a `.p12` and
+   imported with `security import … -T /usr/bin/codesign -T /usr/bin/productbuild`.
+   `security find-identity -v -p codesigning` must list "Apple Distribution: …" and
+   `security find-identity -v -p basic` must list "3rd Party Mac Developer Installer: …".
+2. **A Mac App Store provisioning profile** named `AI Usage Monitor Mac App Store` for the App
+   ID `com.jiggykakkad.UsageMonitor` and the Apple Distribution certificate. Create it at
+   <https://developer.apple.com/account/resources/profiles/add> (Distribution > Mac App Store
+   Connect) or through the App Store Connect API, save it as
+   `Config/Signing/AIUsageMonitor_MacAppStore.provisionprofile` and copy it to
+   `~/Library/Developer/Xcode/UserData/Provisioning Profiles/<UUID>.provisionprofile`. The
+   script finds it by its `Name` entry, so the file name does not matter.
+3. The API key from the notary step, whose role must be **App Manager** for uploads.
+
+Cloud-managed automatic signing was tried and does not work from a shell: an App Manager API
+key is refused ("Cloud signing permission error") and `xcodebuild` cannot use Xcode's
+signed-in accounts ("No Accounts").
+
+```sh
+scripts/build-appstore.sh --dry-run             # show the plan
+scripts/build-appstore.sh                       # archive and export dist/appstore/UsageMonitor.pkg
+scripts/build-appstore.sh --upload              # archive and upload to App Store Connect
+scripts/build-appstore.sh --version 0.2.0 --upload
+```
+
+The script sets `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` like `build-dmg.sh`, refuses
+an archive that is not sandboxed or that carries `get-task-allow`, and warns when
+temporary-exception entitlements are present because App Review rejects them. After an upload,
+App Store Connect processes the build for a few minutes; then, in the app record, set the
+version string to the same `X.Y.Z`, pick the build, complete the listing and submit for review.
+`CFBundleVersion` is the commit count, so a second upload for the same version needs a new
+commit on `main`.
 
 ## Recover from a bad release
 
