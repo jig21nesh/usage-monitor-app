@@ -14,6 +14,8 @@
 #   APP_STORE_TEAM_ID  Apple Developer team that owns the App Store record (default 34GSD8B76A).
 #   APP_STORE_PROFILE  Name of the installed Mac App Store provisioning profile
 #                      (default "AI Usage Monitor Mac App Store").
+#   APP_STORE_BRANDING xcconfig with publisher branding overrides for the About window
+#                      (default Config/Branding/AppStore.xcconfig; skipped when absent, ADR 0011).
 #   NOTARY_KEY_PATH + NOTARY_KEY_ID + NOTARY_ISSUER_ID   App Store Connect API key; when unset
 #                      they are read from Config/Signing/notary.env (git-ignored).
 set -euo pipefail
@@ -53,6 +55,7 @@ BUNDLE_ID="com.jiggykakkad.UsageMonitor"
 APP_CERTIFICATE="Apple Distribution"
 INSTALLER_CERTIFICATE="3rd Party Mac Developer Installer"
 PROFILE_DIRS=("$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles" "$HOME/Library/MobileDevice/Provisioning Profiles")
+BRANDING_XCCONFIG="${APP_STORE_BRANDING:-Config/Branding/AppStore.xcconfig}"
 
 VERSION=""
 OUTPUT_DIR="dist/appstore"
@@ -136,12 +139,24 @@ for dir in "${PROFILE_DIRS[@]}"; do
 done
 [ -n "$PROFILE_FILE" ] || die "provisioning profile '$PROFILE_NAME' is not installed for Xcode (see docs/RELEASING.md)"
 
+# Publisher branding: an xcconfig layered over the project so the store build can name its
+# publisher without committing anything channel-specific (ADR 0011). Absent file means the
+# defaults. The matching logo catalog, if any, enters the project through scripts/bootstrap.sh.
+BRANDING_ARGS=()
+BRANDING_NOTE="defaults"
+if [ -f "$BRANDING_XCCONFIG" ]; then
+    [ -r "$BRANDING_XCCONFIG" ] || die "branding xcconfig $BRANDING_XCCONFIG is not readable"
+    BRANDING_ARGS=(-xcconfig "$BRANDING_XCCONFIG")
+    BRANDING_NOTE="$BRANDING_XCCONFIG"
+fi
+
 log "Plan"
 note "version:        $VERSION"
 note "build number:   $BUILD_NUMBER"
 note "team:           $TEAM_ID"
 note "signing:        $APP_CERTIFICATE + $INSTALLER_CERTIFICATE, profile '$PROFILE_NAME'"
 note "destination:    $DESTINATION$([ "$UPLOAD" -eq 0 ] && echo " to $OUTPUT_DIR")"
+note "branding:       $BRANDING_NOTE"
 if [ "$DRY_RUN" -eq 1 ]; then
     log "Dry run; nothing built."
     exit 0
@@ -156,7 +171,7 @@ xcodebuild -project "$PRODUCT.xcodeproj" -scheme "$SCHEME" -configuration Releas
     -destination 'generic/platform=macOS' -archivePath "$ARCHIVE_PATH" \
     MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
     DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
-    "${AUTH_ARGS[@]}" -quiet archive
+    ${BRANDING_ARGS[@]+"${BRANDING_ARGS[@]}"} "${AUTH_ARGS[@]}" -quiet archive
 ARCHIVED_APP="$ARCHIVE_PATH/Products/Applications/$PRODUCT.app"
 [ -d "$ARCHIVED_APP" ] || die "archived app not found at $ARCHIVED_APP"
 
