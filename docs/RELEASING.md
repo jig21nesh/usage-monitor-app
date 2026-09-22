@@ -129,6 +129,45 @@ version string to the same `X.Y.Z`, pick the build, complete the listing and sub
 `CFBundleVersion` is the commit count, so a second upload for the same version needs a new
 commit on `main`.
 
+### Publisher branding for the App Store build
+
+The About window reads its publisher from build settings ([ADR 0011](adr/0011-build-time-publisher-branding.md)).
+The committed defaults are the open-source identity; the store build overrides them with the
+git-ignored file `Config/Branding/AppStore.xcconfig`, which `build-appstore.sh` passes to
+`xcodebuild archive` when it exists (`APP_STORE_BRANDING=<path>` points elsewhere; the plan
+output shows `branding: <file>` or `branding: defaults`). The five settings:
+
+| Setting | About window use |
+|---|---|
+| `UM_BRAND_MAKER_NAME` | "Made by <name>" |
+| `UM_BRAND_TAGLINE` | The line under the maker |
+| `UM_BRAND_WEBSITE_URL` | The Website button; `http(s)` only |
+| `UM_BRAND_COPYRIGHT_HOLDER` | "Copyright © 2026 <holder>." in the window and in `NSHumanReadableCopyright` |
+| `UM_BRAND_LOGO_ASSET` | Name of an image in `Config/Branding/BrandAssets.xcassets`; empty for no logo |
+
+xcconfig treats `//` as the start of a comment, so write URLs as `https:/$()/example.com`.
+
+The logo needs the catalog to be part of the generated project without appearing in
+`project.yml`. `scripts/bootstrap.sh` generates from `Config/Branding/Branding.yml` whenever
+that file exists (from the repository root, so paths are root-relative) and from `project.yml`
+otherwise. The branding spec includes the main spec and adds the catalog:
+
+```yaml
+include:
+  - path: project.yml
+    relativePaths: false
+targets:
+  UsageMonitor:
+    sources:
+      - path: Config/Branding/BrandAssets.xcassets
+```
+
+`Config/Branding/BrandAssets.xcassets/<name>.imageset/` holds the logo (light and dark
+variants work like any asset catalog image) and `<name>` is the value of `UM_BRAND_LOGO_ASSET`.
+A name that does not resolve at runtime simply hides the logo. Keep the store listing's
+marketing URL and copyright fields in step with these values by hand; App Store Connect does
+not read them from the build.
+
 ## Recover from a bad release
 
 Tags and releases are deleted by hand, never by the script, and deleting either needs the

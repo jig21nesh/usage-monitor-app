@@ -59,6 +59,8 @@ Adopt option 3.
   `-authenticationKey*` flags.
 - `ITSAppUsesNonExemptEncryption` is `false` in `Info.plist`: the app uses only HTTPS through
   the system frameworks, so every upload skips the export compliance question.
+- The store build may present a different publisher in the About window through the
+  build-setting overrides of ADR 0011; the code and version are still the DMG's.
 - The store record is "AI Usage Monitor", macOS only, primary language English (Australia),
   free, category Utilities, seller Curious Pi Pty Ltd. The privacy policy URL points at
   `PRIVACY.md` on the `main` branch.

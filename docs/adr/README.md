@@ -15,6 +15,7 @@ records are kept and link forward to their replacement.
 | [0008](0008-additional-providers-and-menu-bar-status.md) | Four more providers and a colour-coded menu bar status | Accepted | GitHub Copilot, Cursor, Muse Code and OpenCode Go under the credential-reuse rule; menu bar tinted by a tracked provider's session limit |
 | [0009](0009-user-granted-home-folder-access.md) | User-granted home folder access instead of sandbox temporary exceptions | Accepted | The user grants the home folder once in the open panel; a read-only security-scoped bookmark replaces seven temporary-exception entitlements, identically for the DMG and the App Store build |
 | [0010](0010-mac-app-store-distribution.md) | Mac App Store distribution alongside the GitHub DMG | Accepted | `scripts/build-appstore.sh` archives and exports with the Apple Distribution and Mac Installer Distribution certificates held on the maintainer's Mac, from the same commit as the DMG; store version equals the GitHub tag; DMG stays the primary download |
+| [0011](0011-build-time-publisher-branding.md) | Publisher branding comes from build settings | Accepted | The About window reads maker, tagline, website, copyright holder and logo from Info.plist keys fed by build settings; the open-source defaults are committed, a git-ignored xcconfig and asset catalog brand the App Store build |
 
 ## Writing a new record
 
