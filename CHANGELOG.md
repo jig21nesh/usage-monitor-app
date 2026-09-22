@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-22
+
 ### Changed
 
 - App Sandbox no longer relies on temporary-exception entitlements for the seven vendor
@@ -92,5 +94,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   token, so Copilot no longer gets 401 on Macs where `gh` keeps the token in the keychain (the
   default).
 
-[Unreleased]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.1.0...main
+[Unreleased]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.2.0...main
+[0.2.0]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/jig21nesh/usage-monitor-app/releases/tag/v0.1.0
