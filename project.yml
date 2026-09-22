@@ -26,7 +26,14 @@ settings:
     DEAD_CODE_STRIPPING: YES
     CODE_SIGN_STYLE: Automatic
     CURRENT_PROJECT_VERSION: 1
-    MARKETING_VERSION: 0.2.0
+    MARKETING_VERSION: 0.2.1
+    # Publisher branding shown in the About window (ADR 0011). The open-source defaults live
+    # here; a distribution channel overrides them with an xcconfig passed to xcodebuild.
+    UM_BRAND_MAKER_NAME: Jiggy Kakkad
+    UM_BRAND_TAGLINE: Principal AI Engineer in Sydney, Australia. I build AI systems for production.
+    UM_BRAND_WEBSITE_URL: https://jiggykakkad.com
+    UM_BRAND_COPYRIGHT_HOLDER: Jiggy Kakkad
+    UM_BRAND_LOGO_ASSET: ""
     ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
   configs:
@@ -54,8 +61,13 @@ targets:
         LSUIElement: true
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         LSApplicationCategoryType: public.app-category.utilities
-        NSHumanReadableCopyright: "Copyright © 2026 Jiggy Kakkad. MIT License."
+        NSHumanReadableCopyright: Copyright © 2026 $(UM_BRAND_COPYRIGHT_HOLDER). MIT License.
         NSPrincipalClass: NSApplication
+        UMBrandMakerName: $(UM_BRAND_MAKER_NAME)
+        UMBrandTagline: $(UM_BRAND_TAGLINE)
+        UMBrandWebsiteURL: $(UM_BRAND_WEBSITE_URL)
+        UMBrandCopyrightHolder: $(UM_BRAND_COPYRIGHT_HOLDER)
+        UMBrandLogoAsset: $(UM_BRAND_LOGO_ASSET)
         # HTTPS through system frameworks only: exempt from export compliance, so uploads skip the question.
         ITSAppUsesNonExemptEncryption: false
     entitlements:

@@ -29,8 +29,18 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2026 Jiggy Kakkad. MIT License.</string>
+	<string>Copyright © 2026 $(UM_BRAND_COPYRIGHT_HOLDER). MIT License.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>UMBrandCopyrightHolder</key>
+	<string>$(UM_BRAND_COPYRIGHT_HOLDER)</string>
+	<key>UMBrandLogoAsset</key>
+	<string>$(UM_BRAND_LOGO_ASSET)</string>
+	<key>UMBrandMakerName</key>
+	<string>$(UM_BRAND_MAKER_NAME)</string>
+	<key>UMBrandTagline</key>
+	<string>$(UM_BRAND_TAGLINE)</string>
+	<key>UMBrandWebsiteURL</key>
+	<string>$(UM_BRAND_WEBSITE_URL)</string>
 </dict>
 </plist>
