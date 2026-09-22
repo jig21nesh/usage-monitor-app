@@ -7,6 +7,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-22
+
+### Changed
+
+- About window maker, tagline, website, copyright holder and logo are read from build settings
+  so each distribution channel can present its publisher; the open-source defaults are
+  unchanged (ADR 0011). `scripts/build-appstore.sh` applies `Config/Branding/AppStore.xcconfig`
+  when it exists.
+
 ## [0.2.0] - 2026-09-22
 
 ### Changed
@@ -94,6 +103,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   token, so Copilot no longer gets 401 on Macs where `gh` keeps the token in the keychain (the
   default).
 
-[Unreleased]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.2.0...main
+[Unreleased]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.2.1...main
+[0.2.1]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/jig21nesh/usage-monitor-app/releases/tag/v0.1.0

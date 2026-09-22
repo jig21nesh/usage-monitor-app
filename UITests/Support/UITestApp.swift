@@ -20,9 +20,11 @@ enum UITestApp {
         scenario: UITestScenario = .linked,
         arguments: [String] = [],
         firstLaunch: Bool = false,
-        reset: Bool = true
+        reset: Bool = true,
+        environment: [String: String] = [:]
     ) -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchEnvironment.merge(environment) { _, override in override }
         app.launchEnvironment["USAGE_MONITOR_UITEST"] = "1"
         app.launchEnvironment["USAGE_MONITOR_UITEST_SCENARIO"] = scenario.rawValue
         if firstLaunch {

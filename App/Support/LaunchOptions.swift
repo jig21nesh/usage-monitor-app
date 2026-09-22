@@ -17,6 +17,12 @@ struct LaunchOptions: Equatable {
     var openOnboarding = false
     var openPanelPreview = false
     var openAbout = false
+    // Publisher branding overrides for the About window (Debug only), so a UI test can exercise
+    // the Info.plist-driven branding path (ADR 0011) without building a branded bundle.
+    var brandMakerName: String?
+    var brandTagline: String?
+    var brandWebsiteURL: String?
+    var brandCopyrightHolder: String?
 
     static func parse(
         arguments: [String] = CommandLine.arguments,
@@ -32,7 +38,18 @@ struct LaunchOptions: Equatable {
         options.openOnboarding = arguments.contains("-openOnboarding")
         options.openPanelPreview = arguments.contains("-openPanelPreview")
         options.openAbout = arguments.contains("-openAbout")
+        options.brandMakerName = nonEmpty(environment["USAGE_MONITOR_BRAND_MAKER"])
+        options.brandTagline = nonEmpty(environment["USAGE_MONITOR_BRAND_TAGLINE"])
+        options.brandWebsiteURL = nonEmpty(environment["USAGE_MONITOR_BRAND_WEBSITE"])
+        options.brandCopyrightHolder = nonEmpty(environment["USAGE_MONITOR_BRAND_HOLDER"])
         #endif
         return options
     }
+
+    #if DEBUG
+    private static func nonEmpty(_ value: String?) -> String? {
+        guard let value, !value.isEmpty else { return nil }
+        return value
+    }
+    #endif
 }

@@ -13,5 +13,12 @@ if [ ! -f Config/Local.xcconfig ]; then
     echo "Created Config/Local.xcconfig from the example. Set DEVELOPMENT_TEAM before archiving." >&2
 fi
 
-xcodegen generate --quiet
-echo "Generated UsageMonitor.xcodeproj"
+# A release Mac may carry a git-ignored publisher branding spec that includes project.yml and
+# adds the logo asset catalog (ADR 0011). Everyone else generates from project.yml alone.
+SPEC="project.yml"
+BRANDING_SPEC="Config/Branding/Branding.yml"
+if [ -f "$BRANDING_SPEC" ]; then
+    SPEC="$BRANDING_SPEC"
+fi
+xcodegen generate --quiet --spec "$SPEC" --project . --project-root .
+echo "Generated UsageMonitor.xcodeproj from $SPEC"

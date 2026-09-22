@@ -17,6 +17,8 @@ Package.resolved
 Config/Local.xcconfig
 # Signing material for local releases (private key, certificate, notary API key)
 Config/Signing/
+# Publisher branding overrides for the App Store build (xcconfig and logo asset catalog)
+Config/Branding/
 
 # Coverage and build output
 coverage/
