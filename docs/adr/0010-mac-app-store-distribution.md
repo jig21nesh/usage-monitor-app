@@ -26,26 +26,37 @@ The App Store imposes constraints the DMG does not:
 Options for producing the store build:
 
 1. **Xcode Organizer by hand.** Works, but every release would differ by whoever clicked what.
-2. **`xcodebuild archive` and `-exportArchive` with automatic, cloud-managed signing** driven
-   by a script and authenticated with the App Store Connect API key already used for
-   notarisation. Xcode creates and renews the distribution certificates and the profile on
-   Apple's side; nothing new enters the keychain.
-3. **Separate store-only target or configuration.** Unnecessary: the same entitlements now
+2. **`xcodebuild archive` and `-exportArchive` with cloud-managed automatic signing**,
+   authenticated with the App Store Connect API key already used for notarisation. Tried on
+   2026-09-22: Xcode answered "Cloud signing permission error" because an App Manager key
+   cannot mint cloud-managed distribution certificates, and `xcodebuild` cannot see Xcode's
+   signed-in accounts from a shell ("No Accounts").
+3. **`xcodebuild archive` and `-exportArchive` with manual signing** against an Apple
+   Distribution certificate, a Mac Installer Distribution certificate and a Mac App Store
+   provisioning profile held on the maintainer's Mac, created the same way as the Developer ID
+   certificate (local key, CSR, download) and, for the profile, through the App Store Connect
+   API with the existing key. Deterministic and scriptable.
+4. **Separate store-only target or configuration.** Unnecessary: the same entitlements now
    suit both channels, and a second target would let the two builds drift.
 
 ## Decision
 
-Adopt option 2.
+Adopt option 3.
 
 - `scripts/build-appstore.sh` archives the `UsageMonitor` scheme in Release with
   `MARKETING_VERSION` set to the version and `CURRENT_PROJECT_VERSION` set to the git commit
   count, exactly as `scripts/build-dmg.sh` does, so a version's DMG and store build come from
-  the same commit and report the same numbers. It exports with method `app-store-connect`,
-  `signingStyle` automatic and the team id, either to a local `.pkg` (default) or straight to
-  App Store Connect (`--upload`). It refuses builds that are not sandboxed or that carry
-  `get-task-allow`, and warns when temporary-exception entitlements are still present.
-- Authentication reuses the API key in `Config/Signing/` (App Manager role, which uploads
-  require) through `-allowProvisioningUpdates` and the `-authenticationKey*` flags.
+  the same commit and report the same numbers. It exports with method `app-store-connect` and
+  manual signing (Apple Distribution, 3rd Party Mac Developer Installer, profile "AI Usage
+  Monitor Mac App Store"), either to a local `.pkg` (default) or straight to App Store Connect
+  (`--upload`). It refuses to start unless both identities and the profile are installed,
+  refuses archives that are not sandboxed or that carry `get-task-allow`, and warns when
+  temporary-exception entitlements are still present.
+- The store certificates and their private keys live next to the Developer ID material in the
+  git-ignored `Config/Signing/` folder and in the login keychain; the profile is kept there too
+  and installed under `~/Library/Developer/Xcode/UserData/Provisioning Profiles/`. Uploads
+  authenticate with the API key in `Config/Signing/` (App Manager role) through the
+  `-authenticationKey*` flags.
 - `ITSAppUsesNonExemptEncryption` is `false` in `Info.plist`: the app uses only HTTPS through
   the system frameworks, so every upload skips the export compliance question.
 - The store record is "AI Usage Monitor", macOS only, primary language English (Australia),
@@ -61,8 +72,9 @@ Adopt option 2.
 
 - Two artefacts per version, one commit, one version number. A store rejection does not
   affect the GitHub release, and a fix ships as the next version in both places.
-- The certificates and profile are managed by Apple; a new Mac needs only the API key file to
-  produce store builds. Losing the `.p8` means creating a new key in App Store Connect.
+- Apple Distribution and Mac Installer Distribution certificates last one year (until
+  2027-09-22) and the profile expires with them; renewing means a new CSR each, a new profile,
+  and re-importing. `docs/RELEASING.md` carries the steps. A second Mac needs the same material.
 - The commit count as build number means a re-upload for the same version needs at least one
   new commit on `main`, which is the intended workflow anyway.
 - App Review outcome under guidelines 2.1 (reviewers cannot see live data) and 5.2.2 (vendor

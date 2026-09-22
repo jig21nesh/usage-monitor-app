@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Builds the Mac App Store package for AI Usage Monitor and optionally uploads it (ADR 0010).
 #
-# The archive is signed automatically by Xcode with the team's cloud-managed Apple Distribution
-# and Mac Installer Distribution certificates; nothing is imported into the keychain. The same
-# App Store Connect API key used for notarisation authenticates provisioning and the upload.
+# The archive is built with the team's development signing, then re-signed at export with the
+# Apple Distribution certificate, the Mac Installer Distribution certificate and the Mac App
+# Store provisioning profile held on this Mac (docs/RELEASING.md). The App Store Connect API key
+# used for notarisation authenticates the upload.
 #
 # The build carries the version given with --version (the release tag) as MARKETING_VERSION and
 # the git commit count as CURRENT_PROJECT_VERSION, exactly like scripts/build-dmg.sh, so the
@@ -11,6 +12,8 @@
 #
 # Environment:
 #   APP_STORE_TEAM_ID  Apple Developer team that owns the App Store record (default 34GSD8B76A).
+#   APP_STORE_PROFILE  Name of the installed Mac App Store provisioning profile
+#                      (default "AI Usage Monitor Mac App Store").
 #   NOTARY_KEY_PATH + NOTARY_KEY_ID + NOTARY_ISSUER_ID   App Store Connect API key; when unset
 #                      they are read from Config/Signing/notary.env (git-ignored).
 set -euo pipefail
@@ -28,8 +31,10 @@ Options:
   --dry-run         Print the plan and exit without building
   -h, --help        Show this help
 
-Requires an App Store Connect API key (App Manager role) in Config/Signing/notary.env or the
-NOTARY_KEY_PATH, NOTARY_KEY_ID and NOTARY_ISSUER_ID variables. See docs/RELEASING.md.
+Requires the Apple Distribution and Mac Installer Distribution identities in the login keychain,
+the Mac App Store provisioning profile installed for Xcode, and an App Store Connect API key
+(App Manager role) in Config/Signing/notary.env or the NOTARY_KEY_PATH, NOTARY_KEY_ID and
+NOTARY_ISSUER_ID variables. See docs/RELEASING.md.
 EOF
 }
 
@@ -44,6 +49,10 @@ PRODUCT="UsageMonitor"
 SCHEME="UsageMonitor"
 ARCHIVE_PATH="build/AppStore/$PRODUCT.xcarchive"
 CREDENTIALS_FILE="Config/Signing/notary.env"
+BUNDLE_ID="com.jiggykakkad.UsageMonitor"
+APP_CERTIFICATE="Apple Distribution"
+INSTALLER_CERTIFICATE="3rd Party Mac Developer Installer"
+PROFILE_DIRS=("$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles" "$HOME/Library/MobileDevice/Provisioning Profiles")
 
 VERSION=""
 OUTPUT_DIR="dist/appstore"
@@ -108,11 +117,30 @@ AUTH_ARGS=(
 )
 DESTINATION="$([ "$UPLOAD" -eq 1 ] && echo upload || echo export)"
 
+# Signing material: both identities must be in the keychain and the profile installed where
+# Xcode looks; the profile is matched by its Name entry, never by file name.
+PROFILE_NAME="${APP_STORE_PROFILE:-AI Usage Monitor Mac App Store}"
+PROFILE_NAME_PATTERN='^[A-Za-z0-9 ._-]+$'
+[[ "$PROFILE_NAME" =~ $PROFILE_NAME_PATTERN ]] || die "APP_STORE_PROFILE contains unexpected characters"
+security find-identity -v -p codesigning | grep -q "\"$APP_CERTIFICATE: " \
+    || die "no '$APP_CERTIFICATE' identity in the keychain (see docs/RELEASING.md, App Store build)"
+security find-identity -v -p basic | grep -q "\"$INSTALLER_CERTIFICATE: " \
+    || die "no '$INSTALLER_CERTIFICATE' identity in the keychain (see docs/RELEASING.md, App Store build)"
+PROFILE_FILE=""
+for dir in "${PROFILE_DIRS[@]}"; do
+    [ -d "$dir" ] || continue
+    while IFS= read -r -d '' candidate; do
+        name="$(security cms -D -i "$candidate" 2>/dev/null | plutil -extract Name raw - 2>/dev/null || true)"
+        if [ "$name" = "$PROFILE_NAME" ]; then PROFILE_FILE="$candidate"; break 2; fi
+    done < <(find "$dir" -maxdepth 1 -name '*.provisionprofile' -print0)
+done
+[ -n "$PROFILE_FILE" ] || die "provisioning profile '$PROFILE_NAME' is not installed for Xcode (see docs/RELEASING.md)"
+
 log "Plan"
 note "version:        $VERSION"
 note "build number:   $BUILD_NUMBER"
 note "team:           $TEAM_ID"
-note "signing:        automatic, cloud-managed Apple Distribution"
+note "signing:        $APP_CERTIFICATE + $INSTALLER_CERTIFICATE, profile '$PROFILE_NAME'"
 note "destination:    $DESTINATION$([ "$UPLOAD" -eq 0 ] && echo " to $OUTPUT_DIR")"
 if [ "$DRY_RUN" -eq 1 ]; then
     log "Dry run; nothing built."
@@ -155,7 +183,10 @@ cat > "$OPTIONS" <<EOF
 <key>method</key><string>app-store-connect</string>
 <key>destination</key><string>$DESTINATION</string>
 <key>teamID</key><string>$TEAM_ID</string>
-<key>signingStyle</key><string>automatic</string>
+<key>signingStyle</key><string>manual</string>
+<key>signingCertificate</key><string>$APP_CERTIFICATE</string>
+<key>installerSigningCertificate</key><string>$INSTALLER_CERTIFICATE</string>
+<key>provisioningProfiles</key><dict><key>$BUNDLE_ID</key><string>$PROFILE_NAME</string></dict>
 <key>uploadSymbols</key><true/>
 <key>manageAppVersionAndBuildNumber</key><false/>
 </dict></plist>
@@ -167,8 +198,14 @@ else
     log "Exporting package"
     mkdir -p "$OUTPUT_DIR"
 fi
-xcodebuild -exportArchive -archivePath "$ARCHIVE_PATH" -exportOptionsPlist "$OPTIONS" \
-    -exportPath "$OUTPUT_DIR" "${AUTH_ARGS[@]}"
+# The API key is only needed to upload; a local export signs with the keychain alone.
+if [ "$UPLOAD" -eq 1 ]; then
+    xcodebuild -exportArchive -archivePath "$ARCHIVE_PATH" -exportOptionsPlist "$OPTIONS" \
+        -exportPath "$OUTPUT_DIR" "${AUTH_ARGS[@]}"
+else
+    xcodebuild -exportArchive -archivePath "$ARCHIVE_PATH" -exportOptionsPlist "$OPTIONS" \
+        -exportPath "$OUTPUT_DIR"
+fi
 
 if [ "$UPLOAD" -eq 0 ]; then
     PKG="$OUTPUT_DIR/$PRODUCT.pkg"
