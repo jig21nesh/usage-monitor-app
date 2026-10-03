@@ -214,8 +214,9 @@ The icon is a gauge whose needle follows the tracked window and whose colour fol
 thresholds: **green** below the orange threshold, **orange** from 60% used, **red** from 80%
 used (defaults; editable in 5% steps). It shows the standard **monochrome** icon while the
 tracked provider is unknown or its numbers are stale, so it stays fully visible on any menu
-bar. The tracked provider is the one you choose under **Status follows**; in **Automatic** mode it is the only enabled provider, or, with several enabled, the one whose
-session window is fullest. Switch **Colour the menu bar icon** off for the standard monochrome
+bar. The tracked provider is the one you choose under **Status follows**; in **Automatic**
+mode it is the only enabled provider, or, with several enabled, the one whose session window
+is fullest. Switch **Colour the menu bar icon** off for the standard monochrome
 template icon.
 
 Behaviour worth knowing:
