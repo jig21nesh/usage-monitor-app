@@ -24,15 +24,16 @@ enum MenuBarIconRenderer {
         }
     }
 
-    /// Stale numbers are shown grey even when the last known level was green: the colour is a
-    /// live signal, not a memory.
-    static func tint(for level: MenuBarLevel, isStale: Bool) -> NSColor {
-        guard !isStale else { return .secondaryLabelColor }
+    /// Nil when there is no live reading: the icon then stays a template image so the system draws
+    /// it at full menu bar contrast (ADR 0012).
+    static func tint(for level: MenuBarLevel, isStale: Bool) -> NSColor? {
+        let status = MenuBarStatus(provider: nil, window: nil, level: level, isStale: isStale)
+        guard status.hasLiveLevel else { return nil }
         switch level {
         case .ok: return .systemGreen
         case .warning: return .systemOrange
         case .critical: return .systemRed
-        case .unknown: return .secondaryLabelColor
+        case .unknown: return nil
         }
     }
 
@@ -41,14 +42,12 @@ enum MenuBarIconRenderer {
             ?? NSImage(systemSymbolName: "gauge", accessibilityDescription: nil)
             ?? NSImage()
         var configuration = NSImage.SymbolConfiguration(pointSize: pointSize, weight: .medium)
-        if colored {
-            configuration = configuration.applying(
-                NSImage.SymbolConfiguration(hierarchicalColor: tint(for: level, isStale: isStale))
-            )
+        let tint = colored ? tint(for: level, isStale: isStale) : nil
+        if let tint {
+            configuration = configuration.applying(NSImage.SymbolConfiguration(hierarchicalColor: tint))
         }
         let image = base.withSymbolConfiguration(configuration) ?? base
-        // A template image is recoloured by the system; only the monochrome option wants that.
-        image.isTemplate = !colored
+        image.isTemplate = tint == nil
         return image
     }
 

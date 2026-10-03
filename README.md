@@ -65,7 +65,8 @@ notarised by Apple; see [Installation](#installation).
   spend when a limit is set.
 - **Muse Code (experimental):** Meta's terminal coding agent; 5-hour and weekly windows.
 - **Colour-coded menu bar icon:** green, orange or red for the provider you choose to track,
-  with thresholds you can change; grey while the number is unknown or stale.
+  with thresholds you can change; the standard monochrome icon while the number is unknown or
+  stale.
 - Choose which providers to show and how often to refresh (1, 2, 5, 10 or 15 minutes).
 - Per-provider backoff on rate limits and outages; the last good numbers stay visible, marked
   stale, until the next successful refresh.
@@ -211,8 +212,8 @@ Open **Settings…** from the panel.
 
 The icon is a gauge whose needle follows the tracked window and whose colour follows the
 thresholds: **green** below the orange threshold, **orange** from 60% used, **red** from 80%
-used (defaults; editable in 5% steps). It turns **grey** while the tracked provider is unknown
-or its numbers are stale. The tracked provider is the one you choose under **Status follows**;
+used (defaults; editable in 5% steps). It shows the standard **monochrome** icon while the
+tracked provider is unknown or its numbers are stale, so it stays fully visible on any menu bar. The tracked provider is the one you choose under **Status follows**;
 in **Automatic** mode it is the only enabled provider, or, with several enabled, the one whose
 session window is fullest. Switch **Colour the menu bar icon** off for the standard monochrome
 template icon.
@@ -466,7 +467,7 @@ time. The maintainers accept that risk for the project, not on your behalf. See
 | Cursor: "stored login has expired" | The token in Cursor's store is within a minute of expiry or past it | Open Cursor so it refreshes its session, then **Re-link** |
 | Muse Code: "stored login has an unexpected format" | The stored token is an `LLM\|` API key, which cannot read subscription usage | Run `muse login` (OAuth), then **Re-link** |
 | OpenCode Go stays not linked | `~/.local/share/opencode/auth.json` has no `opencode-go` entry | Buy or sign in to the Go plan with `opencode auth login`; Zen pay-as-you-go has no windows to show |
-| Menu bar icon is grey | The tracked provider is unknown, not linked, or its numbers are stale | Open the panel; a **stale** badge or the Diagnostics tab shows the last error. Pick another provider under Settings > Menu bar |
+| Menu bar icon is monochrome although colour is on | The tracked provider is unknown, not linked, or its numbers are stale | Open the panel; a **stale** badge or the Diagnostics tab shows the last error. Pick another provider under Settings > Menu bar |
 | Menu bar icon is missing | Your menu bar is full and macOS moved the item into the overflow chevron (») | Click the chevron, or hide another menu bar item. The app is still running |
 | macOS keeps asking for keychain access | **Allow** was chosen instead of **Always Allow**, or the app is an ad-hoc build: every rebuild has a new code identity, which resets **Always Allow** | Choose **Always Allow** next time. For builds you make yourself, sign with your Apple Development identity so the identity stays the same between builds: `SIGNING_IDENTITY="Apple Development: Your Name (TEAMID)" scripts/build-dmg.sh --no-notarize` (see `docs/RELEASING.md`) |
 | Settings window does not appear | Background apps have no Dock icon to activate | Click the menu bar icon and choose **Settings…** again; the app activates itself first |

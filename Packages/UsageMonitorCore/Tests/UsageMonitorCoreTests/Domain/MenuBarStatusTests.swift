@@ -103,4 +103,31 @@ struct MenuBarStatusTests {
         #expect(result.level == .warning)
         #expect(result.window?.usedPercent == 61)
     }
+
+    @Test(arguments: [MenuBarLevel.ok, .warning, .critical])
+    func liveThresholdLevelEarnsATint(level: MenuBarLevel) {
+        let status = MenuBarStatus(provider: .claude, window: nil, level: level, isStale: false)
+        #expect(status.hasLiveLevel)
+    }
+
+    @Test(arguments: [MenuBarLevel.ok, .warning, .critical, .unknown])
+    func staleReadingHasNoLiveLevel(level: MenuBarLevel) {
+        let status = MenuBarStatus(provider: .claude, window: nil, level: level, isStale: true)
+        #expect(!status.hasLiveLevel)
+    }
+
+    @Test func unknownLevelHasNoLiveLevel() {
+        #expect(!MenuBarStatus.unknown.hasLiveLevel)
+        let status = MenuBarStatus(provider: .claude, window: nil, level: .unknown, isStale: false)
+        #expect(!status.hasLiveLevel)
+    }
+
+    @Test func freshInstallWithNoLoginsHasNoLiveLevel() {
+        let statuses = [status(.claude), status(.openAI), status(.grok)]
+        let result = MenuBarStatusResolver.resolve(
+            statuses: statuses,
+            settings: settings(enabled: [.claude, .openAI, .grok])
+        )
+        #expect(!result.hasLiveLevel)
+    }
 }
