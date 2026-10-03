@@ -1,7 +1,7 @@
 # ADR 0008: Four more providers and a colour-coded menu bar status
 
 Date: 2026-09-20
-Status: Accepted
+Status: Accepted; the grey unknown and stale icon is superseded by [ADR 0012](0012-monochrome-menu-bar-icon-without-live-level.md)
 
 ## Context
 

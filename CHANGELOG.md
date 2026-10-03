@@ -7,6 +7,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- The menu bar icon was nearly invisible while no provider had a live reading (a fresh install
+  with no logins, or stale numbers): it was drawn in a translucent grey that ignored the menu
+  bar's appearance. It now falls back to the standard monochrome template icon, which the system
+  draws at full contrast; green, orange and red are unchanged (ADR 0012).
+
 ## [0.2.1] - 2026-09-22
 
 ### Changed

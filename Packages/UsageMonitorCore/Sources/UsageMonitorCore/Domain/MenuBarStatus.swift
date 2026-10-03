@@ -21,6 +21,13 @@ public struct MenuBarStatus: Sendable, Hashable {
         self.isStale = isStale
     }
 
+    /// Only a live threshold reading earns a tint. Without one the icon must stay a template image:
+    /// a fixed grey is drawn translucent over the menu bar and reads as missing (ADR 0012).
+    public var hasLiveLevel: Bool {
+        guard !isStale else { return false }
+        return level != .unknown
+    }
+
     public static let unknown = MenuBarStatus(provider: nil, window: nil, level: .unknown, isStale: false)
 }
 
