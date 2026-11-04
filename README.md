@@ -9,7 +9,7 @@ A macOS menu bar extra that shows how much of your AI subscription limits you ha
 **Claude**, **OpenAI (ChatGPT / Codex)**, **Grok**, **GitHub Copilot**, **Cursor**,
 **Muse Code (Meta)** and **OpenCode Go**: session, weekly and monthly windows, reset times and
 your plan name, refreshed in the background every few minutes. The menu bar icon turns green,
-orange or red as the limit you care about fills up.
+orange or red as the limit you care about fills up, with an optional percentage beside it.
 
 **Status:** first release in progress. Release DMGs are signed with a Developer ID and
 notarised by Apple; see [Installation](#installation).
@@ -57,7 +57,7 @@ notarised by Apple; see [Installation](#installation).
 - **Claude:** current 5-hour session, weekly "all models" and weekly per-model windows, each with
   a "Resets in 4 hr 50 min" style countdown, plus your plan name such as "Max (20x)".
 - **OpenAI:** the 5-hour and weekly ChatGPT / Codex windows with reset time and plan type, plus
-  any per-model limits the account carries.
+  any per-model limits the account carries. Shows the number of earned resets when reported.
 - **GitHub Copilot:** monthly premium requests, plus chat and completions when they are metered.
 - **OpenCode Go:** rolling 5-hour, weekly and monthly windows of the Go plan.
 - **Grok (experimental):** weekly credit usage percent, period end and subscription tier.
@@ -67,6 +67,10 @@ notarised by Apple; see [Installation](#installation).
 - **Colour-coded menu bar icon:** green, orange or red for the provider you choose to track,
   with thresholds you can change; the standard monochrome icon while the number is unknown or
   stale.
+- **Percentage in the menu bar:** enabled by default; follows your chosen provider and used/left
+  preference. Hover for the tracked window's reset countdown and exact local date/time.
+- Panel reset countdowns update every minute without extra network requests; the panel also shows
+  the exact reset date and time zone for each window.
 - Choose which providers to show and how often to refresh (1, 2, 5, 10 or 15 minutes).
 - Per-provider backoff on rate limits and outages; the last good numbers stay visible, marked
   stale, until the next successful refresh.
@@ -173,7 +177,8 @@ The panel shows one section per enabled provider:
 |---|---|
 | Plan badge | Plan or tier reported by the vendor, for example "Max (20x)", "Pro", "SuperGrok", "Go" |
 | Bar and percentage | Share of the window used, or left if you prefer (Settings > Refresh) |
-| "Resets in …" / "Resets Mon 3:00 AM" | When the window rolls over, in your local time zone |
+| "Resets in …" and exact date | Countdown plus the reset date, local time and time zone |
+| Available resets | Earned Codex resets when reported; "not reported" means unknown, not zero. Claude links to its Usage page to check offers |
 | "Experimental" tag | Grok, Cursor and Muse Code: the newest, least documented endpoints |
 | "stale" | The most recent refresh failed; the numbers are from the last successful one |
 | Message instead of bars | The provider is not linked or needs re-linking; the login command is shown |
@@ -202,7 +207,7 @@ Open **Settings…** from the panel.
 | Accounts | Per provider: status, plan, credential source, account label, last success, last error, the sign-in command with a Copy button, and **Re-link**. **Show welcome again** reopens the Welcome window |
 | Providers | **Show** switches for the seven providers; experimental ones are tagged |
 | Refresh | Refresh interval (1, 2, 5, 10 or 15 minutes; default 2), last and next refresh, **Refresh now**, **Show percentages as** used or left, **Launch at login** |
-| Menu bar | **Status follows** (Automatic or one enabled provider), **Colour the menu bar icon**, **Orange from** and **Red from** thresholds in 5% steps, and a live preview |
+| Menu bar | **Status follows** (Automatic or one enabled provider), **Show percentage in menu bar**, **Colour the menu bar icon**, **Orange from** and **Red from** thresholds in 5% steps, and a live preview |
 | Diagnostics | Poll counts, last error and duration per provider, app and macOS version, **About…**, and **Copy report** for a redacted text report you can attach to bug reports |
 
 <img src="docs/images/settings-menubar.png" width="440"
@@ -218,6 +223,21 @@ bar. The tracked provider is the one you choose under **Status follows**; in **A
 mode it is the only enabled provider, or, with several enabled, the one whose session window
 is fullest. Switch **Colour the menu bar icon** off for the standard monochrome
 template icon.
+
+**Show percentage in menu bar** is on by default and can be switched off for an icon-only status
+item. It follows **Show percentages as** in Refresh: for example, `42%` used or `58%` left.
+An asterisk (`42%*`) marks a last-known, stale reading; `—` means no usage reading is available.
+Hover over the status item to identify the provider/window and see its reset countdown and exact
+local time. A reset time passing does not clear the usage locally; a successful provider refresh
+must confirm the new allowance. The menu bar tooltip updates with usage/settings changes;
+countdowns in the open panel update every minute.
+
+The OpenAI panel reads `rate_limit_reset_credits.available_count` from the existing usage
+response. Missing or invalid metadata is shown as **Available resets: not reported**. Claude
+offers occasional manual resets, but no count has been verified through the CLI-backed endpoint
+used here, so **View in Claude** opens its Usage page. **View in Codex** opens Codex usage.
+These links let you inspect reset offers in the provider's own interface; the monitor cannot
+redeem resets or purchase credits. See [ADR 0013](docs/adr/0013-usage-percentage-and-reset-details.md).
 
 Behaviour worth knowing:
 
@@ -535,7 +555,6 @@ the matching `CHANGELOG.md` section. GitHub Actions runs tests and lint only. Se
 - Live verification of Muse Code and OpenCode Go against real subscriptions; both ship on the
   strength of fixtures and other open-source monitors' recordings.
 - Support for Codex keyring credential storage.
-- Optional percentage text next to the menu bar icon.
 - Issue [#10](https://github.com/jig21nesh/usage-monitor-app/issues/10): the initially selected
   Settings tab is not exposed to accessibility at launch on macOS 27, so one UI test is skipped.
 - Optional notifications when a window crosses a threshold; localisation.

@@ -29,7 +29,8 @@ public enum OpenAIUsageMapper {
             provider: .openAI,
             planName: OpenAIPlan.displayName(payload.planType ?? credential.planType),
             windows: windows,
-            fetchedAt: now
+            fetchedAt: now,
+            availableResetCount: payload.rateLimitResetCredits?.availableCount
         )
     }
 
@@ -181,11 +182,30 @@ public enum OpenAIUsageMapper {
         let planType: String?
         let rateLimit: RateLimit?
         let additionalRateLimits: [AdditionalLimit]?
+        let rateLimitResetCredits: ResetCredits?
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            planType = try container.decodeIfPresent(String.self, forKey: .planType)
+            rateLimit = try container.decodeIfPresent(RateLimit.self, forKey: .rateLimit)
+            additionalRateLimits = try container.decodeIfPresent([AdditionalLimit].self, forKey: .additionalRateLimits)
+            // Optional metadata must not blank otherwise valid usage if the service changes its shape.
+            rateLimitResetCredits = try? container.decode(ResetCredits.self, forKey: .rateLimitResetCredits)
+        }
 
         enum CodingKeys: String, CodingKey {
             case planType = "plan_type"
             case rateLimit = "rate_limit"
             case additionalRateLimits = "additional_rate_limits"
+            case rateLimitResetCredits = "rate_limit_reset_credits"
+        }
+    }
+
+    struct ResetCredits: Decodable {
+        let availableCount: Int
+
+        enum CodingKeys: String, CodingKey {
+            case availableCount = "available_count"
         }
     }
 

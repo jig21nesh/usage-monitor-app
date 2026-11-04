@@ -66,6 +66,7 @@ public struct AppSettings: Codable, Sendable, Hashable {
     public var menuBarProvider: ProviderID?
     public var menuBarThresholds: MenuBarThresholds
     public var colorsMenuBarIcon: Bool
+    public var showsMenuBarPercentage: Bool
 
     public init(
         enabledProviders: Set<ProviderID>,
@@ -75,7 +76,8 @@ public struct AppSettings: Codable, Sendable, Hashable {
         percentStyle: PercentStyle = .used,
         menuBarProvider: ProviderID? = nil,
         menuBarThresholds: MenuBarThresholds = .default,
-        colorsMenuBarIcon: Bool = true
+        colorsMenuBarIcon: Bool = true,
+        showsMenuBarPercentage: Bool = true
     ) {
         self.enabledProviders = enabledProviders
         self.refreshInterval = refreshInterval
@@ -85,6 +87,7 @@ public struct AppSettings: Codable, Sendable, Hashable {
         self.menuBarProvider = menuBarProvider
         self.menuBarThresholds = menuBarThresholds
         self.colorsMenuBarIcon = colorsMenuBarIcon
+        self.showsMenuBarPercentage = showsMenuBarPercentage
     }
 
     /// Keys added after the first release decode to their defaults, so older settings still load.
@@ -101,7 +104,8 @@ public struct AppSettings: Codable, Sendable, Hashable {
             menuBarProvider: try container.decodeIfPresent(ProviderID.self, forKey: .menuBarProvider),
             menuBarThresholds: try container.decodeIfPresent(MenuBarThresholds.self, forKey: .menuBarThresholds)
                 ?? .default,
-            colorsMenuBarIcon: try container.decodeIfPresent(Bool.self, forKey: .colorsMenuBarIcon) ?? true
+            colorsMenuBarIcon: try container.decodeIfPresent(Bool.self, forKey: .colorsMenuBarIcon) ?? true,
+            showsMenuBarPercentage: try container.decodeIfPresent(Bool.self, forKey: .showsMenuBarPercentage) ?? true
         )
     }
 

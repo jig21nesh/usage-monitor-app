@@ -16,6 +16,11 @@ struct MenuBarSettingsTab: View {
                     }
                 }
                 .accessibilityIdentifier("settings.menubar.provider")
+                Toggle("Show percentage in menu bar", isOn: $model.settings.showsMenuBarPercentage)
+                    .accessibilityIdentifier("settings.menubar.percentage")
+                Text("Uses the used/left preference in Refresh. An asterisk marks stale usage; — means unknown.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 Text(Self.automaticHelp)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -37,7 +42,7 @@ struct MenuBarSettingsTab: View {
                     .foregroundStyle(.secondary)
             }
             Section("Preview") {
-                MenuBarPreviewRow(status: model.menuBarStatus, colored: model.settings.colorsMenuBarIcon)
+                MenuBarPreviewRow(status: model.menuBarStatus, settings: model.settings)
             }
         }
         .formStyle(.grouped)
@@ -83,7 +88,7 @@ struct MenuBarSettingsTab: View {
 /// The three colour states side by side, plus what the icon is tracking right now.
 struct MenuBarPreviewRow: View {
     let status: MenuBarStatus
-    let colored: Bool
+    let settings: AppSettings
 
     struct Sample: Identifiable {
         let title: String
@@ -98,7 +103,7 @@ struct MenuBarPreviewRow: View {
             ForEach(Self.samples) { sample in
                 VStack(spacing: 4) {
                     Image(nsImage: MenuBarIconRenderer.image(
-                        level: sample.level, bucket: sample.bucket, isStale: false, colored: colored
+                        level: sample.level, bucket: sample.bucket, isStale: false, colored: settings.colorsMenuBarIcon
                     ))
                     Text(sample.title)
                         .font(.caption2)
@@ -109,8 +114,8 @@ struct MenuBarPreviewRow: View {
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
-                Image(nsImage: MenuBarIconRenderer.image(for: status, colored: colored))
-                Text(MenuBarIconRenderer.accessibilityLabel(for: status))
+                MenuBarStatusView(status: status, settings: settings)
+                Text(UsageSummaryFormatter.menuBarSummary(for: status, style: settings.percentStyle, now: .now))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .accessibilityIdentifier("settings.menubar.tracking")

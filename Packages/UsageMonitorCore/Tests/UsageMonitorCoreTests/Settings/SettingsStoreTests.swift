@@ -17,6 +17,7 @@ struct SettingsStoreTests {
         #expect(settings.menuBarProvider == nil)
         #expect(settings.menuBarThresholds == .default)
         #expect(settings.colorsMenuBarIcon)
+        #expect(settings.showsMenuBarPercentage)
         #expect(settings.refreshInterval == .twoMinutes)
         #expect(!settings.launchAtLogin)
         #expect(!settings.hasCompletedOnboarding)
@@ -66,6 +67,7 @@ struct SettingsStoreTests {
         settings.menuBarProvider = .openAI
         settings.menuBarThresholds = MenuBarThresholds(warningPercent: 50, criticalPercent: 75)
         settings.colorsMenuBarIcon = false
+        settings.showsMenuBarPercentage = false
         let decoded = try JSONDecoder().decode(AppSettings.self, from: JSONEncoder().encode(settings))
         #expect(decoded == settings)
 
@@ -75,6 +77,7 @@ struct SettingsStoreTests {
         #expect(old.menuBarProvider == nil)
         #expect(old.menuBarThresholds == .default)
         #expect(old.colorsMenuBarIcon)
+        #expect(old.showsMenuBarPercentage)
         #expect(old.percentStyle == .remaining)
     }
 

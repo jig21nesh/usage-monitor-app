@@ -88,4 +88,23 @@ struct ResetFormatterTests {
         #expect(formatter.timeZone == .autoupdatingCurrent)
         #expect(formatter.calendar == .autoupdatingCurrent)
     }
+
+    @Test func resetDetailsIncludeLongCountdownsAndExactLocalDates() {
+        #expect(us.resetCountdown(for: nil, now: now) == "Reset time unknown")
+        #expect(us.resetCountdown(for: now, now: now) == "Resets soon")
+        #expect(us.resetCountdown(for: now.addingTimeInterval(59), now: now) == "Resets in 1 min")
+        #expect(us.resetCountdown(for: now.addingTimeInterval(86_400), now: now) == "Resets in 1 day")
+        #expect(us.resetCountdown(for: now.addingTimeInterval(183_600), now: now) == "Resets in 2 days 3 hr")
+        #expect(us.resetDateText(for: nil) == nil)
+        let exact = us.resetDateText(for: date(2026, 9, 21, 3, 0))!
+        #expect(exact.contains("2026"))
+        #expect(exact.contains("3:00 AM"))
+        #expect(exact.contains("AEST") || exact.contains("GMT+10"))
+        #expect(gb.resetDateText(for: date(2026, 9, 21, 3, 0))!.contains("03:00"))
+        // Sydney moves forward an hour: countdown uses elapsed time; the exact date uses local time.
+        let beforeDST = date(2026, 10, 4, 1, 30)
+        let afterDST = beforeDST.addingTimeInterval(3600)
+        #expect(us.resetCountdown(for: afterDST, now: beforeDST) == "Resets in 1 hr")
+        #expect(us.resetDateText(for: afterDST)!.contains("3:30 AM"))
+    }
 }

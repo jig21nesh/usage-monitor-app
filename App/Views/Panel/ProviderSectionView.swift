@@ -14,6 +14,19 @@ struct ProviderSectionView: View {
                 ForEach(snapshot.windows) { window in
                     UsageWindowRow(window: window)
                 }
+                if let destination = resetManagementURL {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(UsageSummaryFormatter.availableResets(
+                            snapshot.availableResetCount, isStale: status.isStale
+                        ))
+                        .accessibilityIdentifier("panel.provider.\(id).resets")
+                        Spacer(minLength: 8)
+                        Link("View in \(status.provider == .openAI ? "Codex" : "Claude")", destination: destination)
+                            .accessibilityIdentifier("panel.provider.\(id).resetsLink")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
                 if let error = status.lastError {
                     Label(error.userMessage, systemImage: "exclamationmark.circle")
                         .font(.caption)
@@ -26,6 +39,14 @@ struct ProviderSectionView: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("panel.provider.\(id)")
+    }
+
+    private var resetManagementURL: URL? {
+        switch status.provider {
+        case .openAI: URL(string: "https://chatgpt.com/codex/settings/usage")
+        case .claude: URL(string: "https://claude.ai/settings/usage")
+        default: nil
+        }
     }
 
     private var header: some View {

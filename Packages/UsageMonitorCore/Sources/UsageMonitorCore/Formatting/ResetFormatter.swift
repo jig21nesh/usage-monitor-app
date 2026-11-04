@@ -41,6 +41,29 @@ public struct ResetFormatter: Sendable {
         "\(Self.wholePercent(window.usedPercent))% used"
     }
 
+    /// A countdown even for weekly/monthly windows; recalculated by the UI without polling the vendor.
+    public func resetCountdown(for date: Date?, now: Date) -> String {
+        guard let date, date.timeIntervalSinceReferenceDate.isFinite else { return "Reset time unknown" }
+        let remaining = date.timeIntervalSince(now)
+        guard remaining > 0 else { return "Resets soon" }
+        guard remaining < Self.day else {
+            guard let days = Int(exactly: (remaining / Self.day).rounded(.down)) else {
+                return "Reset time unknown"
+            }
+            let hours = Int(remaining.truncatingRemainder(dividingBy: Self.day) / 3600)
+            let suffix = hours > 0 ? " \(hours) hr" : ""
+            return "Resets in \(days) \(days == 1 ? "day" : "days")\(suffix)"
+        }
+        return "Resets in \(Self.countdown(remaining))"
+    }
+
+    public func resetDateText(for date: Date?) -> String? {
+        guard let date, date.timeIntervalSinceReferenceDate.isFinite else { return nil }
+        return Self.plainSpaces(date.formatted(
+            style.year().month(.abbreviated).day().hour().minute().timeZone(.specificName(.short))
+        ))
+    }
+
     public func remainingText(_ window: UsageWindow) -> String {
         "\(Self.wholePercent(window.remainingPercent))% left"
     }

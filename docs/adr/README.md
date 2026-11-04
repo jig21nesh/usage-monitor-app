@@ -17,6 +17,7 @@ records are kept and link forward to their replacement.
 | [0010](0010-mac-app-store-distribution.md) | Mac App Store distribution alongside the GitHub DMG | Accepted | `scripts/build-appstore.sh` archives and exports with the Apple Distribution and Mac Installer Distribution certificates held on the maintainer's Mac, from the same commit as the DMG; store version equals the GitHub tag; DMG stays the primary download |
 | [0011](0011-build-time-publisher-branding.md) | Publisher branding comes from build settings | Accepted | The About window reads maker, tagline, website, copyright holder and logo from Info.plist keys fed by build settings; the open-source defaults are committed, a git-ignored xcconfig and asset catalog brand the App Store build |
 | [0012](0012-monochrome-menu-bar-icon-without-live-level.md) | Monochrome menu bar icon without a live level | Accepted | Unknown or stale status draws the template icon instead of a fixed grey tint, which App Review found invisible on the Tahoe menu bar |
+| [0013](0013-usage-percentage-and-reset-details.md) | Menu bar percentage and reset details | Implemented; review pending | Optional used/remaining percentage, countdowns and exact local reset times, and earned Codex reset counts from the existing read-only usage response |
 
 ## Writing a new record
 

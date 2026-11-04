@@ -179,7 +179,7 @@ enum PreviewProviders {
                         resetsAt: now.addingTimeInterval(2 * 3600 + 10 * 60), windowDuration: 18_000),
             UsageWindow(id: "openai.weekly", title: "Weekly usage limit", kind: .weekly, usedPercent: 58,
                         resetsAt: now.addingTimeInterval(3 * 24 * 3600 + 7 * 3600), windowDuration: 604_800),
-        ], fetchedAt: now)
+        ], fetchedAt: now, availableResetCount: 2)
     }
 
     static func grokSnapshot(now: Date) -> UsageSnapshot {

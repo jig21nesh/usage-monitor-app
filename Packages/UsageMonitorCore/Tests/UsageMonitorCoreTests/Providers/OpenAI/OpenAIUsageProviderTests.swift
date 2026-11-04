@@ -36,6 +36,7 @@ struct OpenAIUsageProviderTests {
         #expect(request.headers["Accept"] == "application/json")
         #expect(request.headers["User-Agent"] == "AIUsageMonitor/0.1.0 (macOS)")
         #expect(request.body == nil)
+        #expect(http.requests.count == 1, "reset metadata must come from the same read-only usage request")
     }
 
     @Test func customUserAgentIsSent() async throws {

@@ -1,7 +1,7 @@
 import SwiftUI
 import UsageMonitorCore
 
-/// Title and reset subtitle on the left, bar in the middle, "N% used" on the right.
+/// A usage bar with both a ticking countdown and the exact reset date in the user's time zone.
 struct UsageWindowRow: View {
     @Environment(UsageMonitorModel.self) private var model
     let window: UsageWindow
@@ -11,28 +11,38 @@ struct UsageWindowRow: View {
     }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(alignment: .center, spacing: 12) {
                 Text(window.title)
                     .font(.callout)
                     .lineLimit(1)
+                    .frame(width: 140, alignment: .leading)
                     .accessibilityIdentifier("panel.window.\(window.id).title")
-                Text(ResetText.text(for: window.resetsAt))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .accessibilityIdentifier("panel.window.\(window.id).reset")
+                ProgressView(value: window.usedPercent, total: 100)
+                    .progressViewStyle(.linear)
+                    .tint(Self.tint(forPercent: window.usedPercent))
+                    .accessibilityLabel(window.title)
+                    .accessibilityValue(percentText)
+                Text(percentText)
+                    .font(.callout.monospacedDigit())
+                    .frame(width: 72, alignment: .trailing)
+                    .accessibilityIdentifier("panel.window.\(window.id).percent")
             }
-            .frame(width: 140, alignment: .leading)
-            ProgressView(value: window.usedPercent, total: 100)
-                .progressViewStyle(.linear)
-                .tint(Self.tint(forPercent: window.usedPercent))
-                .accessibilityLabel(window.title)
-                .accessibilityValue(percentText)
-            Text(percentText)
-                .font(.callout.monospacedDigit())
-                .frame(width: 72, alignment: .trailing)
-                .accessibilityIdentifier("panel.window.\(window.id).percent")
+            TimelineView(.periodic(from: Date(timeIntervalSince1970: 0), by: 60)) { context in
+                HStack(alignment: .top, spacing: 8) {
+                    Text(ResetText.formatter.resetCountdown(for: window.resetsAt, now: context.date))
+                        .accessibilityIdentifier("panel.window.\(window.id).reset")
+                    Spacer(minLength: 0)
+                    if let exact = ResetText.formatter.resetDateText(for: window.resetsAt) {
+                        Text(exact)
+                            .multilineTextAlignment(.trailing)
+                            .accessibilityIdentifier("panel.window.\(window.id).resetDate")
+                    }
+                }
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 

@@ -10,8 +10,7 @@ struct MenuBarLabel: View {
     @State private var didRoute = false
 
     var body: some View {
-        Image(nsImage: MenuBarIconRenderer.image(for: status, colored: model.settings.colorsMenuBarIcon))
-            .accessibilityLabel(MenuBarIconRenderer.accessibilityLabel(for: status))
+        MenuBarStatusView(status: status, settings: model.settings)
             .accessibilityIdentifier("menubar.extra")
             .task {
                 guard !didRoute else { return }
@@ -26,4 +25,36 @@ struct MenuBarLabel: View {
     }
 
     private var status: MenuBarStatus { model.menuBarStatus }
+}
+
+/// Shared by the real status item and Settings so the preview includes the same percentage.
+struct MenuBarStatusView: View {
+    let status: MenuBarStatus
+    let settings: AppSettings
+
+    var body: some View {
+        // MenuBarExtra bridges its label to an NSStatusBarButton. A TimelineView here repeatedly
+        // invalidates that bridge on macOS 27; keep the label static between usage/settings updates.
+        let summary = UsageSummaryFormatter.menuBarSummary(for: status, style: settings.percentStyle, now: .now)
+        label
+            .help(summary)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(summary)
+    }
+
+    @ViewBuilder
+    private var label: some View {
+        if settings.showsMenuBarPercentage {
+            Label {
+                Text(UsageSummaryFormatter.menuBarPercentage(for: status, style: settings.percentStyle))
+                    .monospacedDigit()
+                    .accessibilityIdentifier("menubar.percentage")
+            } icon: {
+                Image(nsImage: MenuBarIconRenderer.image(for: status, colored: settings.colorsMenuBarIcon))
+            }
+            .labelStyle(.titleAndIcon)
+        } else {
+            Image(nsImage: MenuBarIconRenderer.image(for: status, colored: settings.colorsMenuBarIcon))
+        }
+    }
 }
