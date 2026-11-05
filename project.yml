@@ -26,7 +26,7 @@ settings:
     DEAD_CODE_STRIPPING: YES
     CODE_SIGN_STYLE: Automatic
     CURRENT_PROJECT_VERSION: 1
-    MARKETING_VERSION: 0.2.1
+    MARKETING_VERSION: 0.2.2
     # Publisher branding shown in the About window (ADR 0011). The open-source defaults live
     # here; a distribution channel overrides them with an xcconfig passed to xcodebuild.
     UM_BRAND_MAKER_NAME: Jiggy Kakkad

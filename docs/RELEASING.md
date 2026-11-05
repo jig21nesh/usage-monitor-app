@@ -129,6 +129,12 @@ version string to the same `X.Y.Z`, pick the build, complete the listing and sub
 `CFBundleVersion` is the commit count, so a second upload for the same version needs a new
 commit on `main`.
 
+Before building an update to an approved App Store version, increase `MARKETING_VERSION` in
+`project.yml` and add the matching changelog section. A higher build number alone cannot reopen
+a closed version: an approved `0.2.1` needs a new version such as `0.2.2`. Check the archived app's
+`CFBundleShortVersionString` and `CFBundleVersion`, then create the matching version in the
+existing App Store Connect app record ([Apple's version update instructions](https://developer.apple.com/help/app-store-connect/update-your-app/create-a-new-version/)).
+
 ### Publisher branding for the App Store build
 
 The About window reads its publisher from build settings ([ADR 0011](adr/0011-build-time-publisher-branding.md)).

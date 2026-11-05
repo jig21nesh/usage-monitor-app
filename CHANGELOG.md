@@ -7,6 +7,16 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-06
+
+### Added
+
+- Optional usage percentage beside the menu bar gauge, following the used or remaining
+  preference, with a matching Settings preview.
+- Reset countdowns and exact local reset times in the usage panel, plus available Codex manual
+  reset counts when the provider reports them. Missing counts remain distinct from zero.
+- Links from the panel to provider usage pages.
+
 ### Fixed
 
 - The menu bar icon was nearly invisible while no provider had a live reading (a fresh install
@@ -110,7 +120,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   token, so Copilot no longer gets 401 on Macs where `gh` keeps the token in the keychain (the
   default).
 
-[Unreleased]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.2.1...main
+[Unreleased]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.2.2...main
+[0.2.2]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/jig21nesh/usage-monitor-app/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/jig21nesh/usage-monitor-app/releases/tag/v0.1.0
